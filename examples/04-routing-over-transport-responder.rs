@@ -126,12 +126,7 @@ fn main() -> core::result::Result<(), u32> {
             ccdr
         };
 
-        let mut delay = Delay::new(cp.SYST, ccdr.clocks);
-        delay.delay_ms(200u16);
-
         println!("Hello ockam_transport_ble!");
-
-        delay.delay_ms(200u16);
 
         let pins = board.split_gpios(dp.GPIOA.split(ccdr.peripheral.GPIOA),
                                      dp.GPIOB.split(ccdr.peripheral.GPIOB),
