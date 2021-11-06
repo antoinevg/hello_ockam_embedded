@@ -91,7 +91,7 @@ getrandom = { version = "0.2", features = ["js"] }
 
 [profile.dev]
 debug = true
-opt-level = "s"
+#opt-level = "s"
 
 [profile.release]
 debug = true
