@@ -17,7 +17,8 @@ break rust_begin_unwind
 # enable itm
 # daisy
 #monitor tpiu config internal /tmp/itm.fifo uart off 480000000 2000000
-monitor tpiu config internal /tmp/itm.fifo uart off 200000000 2000000
+#monitor tpiu config internal /tmp/itm.fifo uart off 200000000 2000000
+monitor tpiu config internal /tmp/itm.fifo uart off 96000000 2000000
 # ?
 #monitor tpiu config internal /tmp/itm.fifo uart off 48000000
 # stm32f4

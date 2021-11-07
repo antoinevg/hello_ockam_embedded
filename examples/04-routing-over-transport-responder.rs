@@ -98,14 +98,14 @@ fn main() -> core::result::Result<(), u32> {
             // link SRAM3 power state to CPU1
             dp.RCC.ahb2enr.modify(|_, w| w.sram3en().set_bit());
 
-            //let pwrcfg = pwr.smps().vos0(syscfg).freeze();
-            let pwrcfg = pwr.freeze();
+            let pwrcfg = pwr.smps().vos0(syscfg).freeze();
+            //let pwrcfg = pwr.freeze();
 
             let ccdr = rcc
-                .sys_ck(200.mhz())                      // system clock @ 480 MHz
+                .sys_ck(96.mhz())                      // system clock @ 480 MHz
                 .pll1_strategy(hal::rcc::PllConfigStrategy::Iterative) // pll1 drives system clock
-                .pll1_r_ck(200.mhz())                   // TRACECLK
-                .pll1_q_ck(200.mhz())
+                .pll1_r_ck(96.mhz())                   // TRACECLK
+                .pll1_q_ck(48.mhz())
                 //.pll3_p_ck(PLL3_P)                    // sai clock @ 12.288 MHz
                 .freeze(pwrcfg, syscfg);
 
