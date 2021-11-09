@@ -66,7 +66,7 @@ bsp_nucleo_h7xx = [
 #ockam = { version = "0.36", default_features = false, features = ["software_vault"] }
 #ockam = { git = "https://github.com/ockam-network/ockam.git", branch = "develop",
 ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["no_std", "alloc", "software_vault"] }
-ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, features = ["no_std", "alloc", "debug_alloc"], optional = true }
+ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, features = ["no_std", "alloc"] }
 ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 
 # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/

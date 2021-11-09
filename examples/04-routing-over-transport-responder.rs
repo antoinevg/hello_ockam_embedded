@@ -12,6 +12,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), no_main)]
 
+#[cfg_attr(not(feature = "std"), macro_use)]
+extern crate ockam_executor;
+
 use panic_itm as _;
 
 #[cfg(feature = "stm32f4")]
@@ -25,10 +28,8 @@ use bsp::hal;
 //use bsp::loggit as println;
 
 use hal::prelude::*;
-use hal::time::Hertz;
 use hal::delay::Delay;
 use hal::timer::Timer;
-use hal::time::U32Ext;
 use hal::pac;
 
 use hal::hal as embedded_hal;
@@ -70,6 +71,7 @@ fn main() -> core::result::Result<(), u32> {
 
     // - ockam::node ----------------------------------------------------------
 
+    use hello_ockam::boards;
     use hello_ockam::Echoer;
     use ockam::{Context, Result};
     use ockam_transport_ble::BleTransport;
@@ -82,49 +84,18 @@ fn main() -> core::result::Result<(), u32> {
         let board = unsafe { bsp::Board::steal() };
         let cp = cortex_m::Peripherals::take().unwrap();
         let dp = pac::Peripherals::take().unwrap();
-        //let ccdr = board.freeze_clocks(dp.PWR.constrain(), dp.RCC.constrain(), &dp.SYSCFG);
-
-        let ccdr = {
-            // SAI clock uses pll3
-            const PLL3_P: Hertz = Hertz(48_000 * 256);
-
-            let (pwr, rcc, syscfg) = (dp.PWR.constrain(),
-                                      dp.RCC.constrain(),
-                                      &dp.SYSCFG);
-
-            let mut cp = unsafe { cortex_m::Peripherals::steal() };
-            let dp = unsafe { pac::Peripherals::steal() };
-
-            // link SRAM3 power state to CPU1
-            dp.RCC.ahb2enr.modify(|_, w| w.sram3en().set_bit());
-
-            let pwrcfg = pwr.smps().vos0(syscfg).freeze();
-            //let pwrcfg = pwr.freeze();
-
-            let ccdr = rcc
-                .sys_ck(96.mhz())                      // system clock @ 480 MHz
-                .pll1_strategy(hal::rcc::PllConfigStrategy::Iterative) // pll1 drives system clock
-                .pll1_r_ck(96.mhz())                   // TRACECLK
-                .pll1_q_ck(48.mhz())
-                //.pll3_p_ck(PLL3_P)                    // sai clock @ 12.288 MHz
-                .freeze(pwrcfg, syscfg);
-
-            unsafe {
-                let swo_frequency = 2_000_000;
-                bsp::itm::enable_itm(&mut cp.DCB,
-                                     &dp.DBGMCU,
-                                     &mut cp.ITM,
-                                     ccdr.clocks.c_ck().0,
-                                     swo_frequency);
+        let ccdr = boards::freeze_clocks_with_config(
+            dp.PWR.constrain(), dp.RCC.constrain(), &dp.SYSCFG,
+            |pwrcfg, rcc, syscfg| {
+                rcc.sys_ck(96.mhz())                // system clock @ 96 MHz
+                   // pll1 drives system clock
+                   .pll1_strategy(hal::rcc::PllConfigStrategy::Iterative)
+                   .pll1_r_ck(96.mhz())             // TRACECLK
+                   .pll1_q_ck(48.mhz())             // spi clock
+                   .pll3_p_ck((48_000 * 256).hz())  // sai clock @ 12.288 MHz
+                   .freeze(pwrcfg, syscfg)
             }
-
-            // configure cpu
-            cp.SCB.invalidate_icache();
-            cp.SCB.enable_icache();
-            cp.DWT.enable_cycle_counter();
-
-            ccdr
-        };
+        );
 
         println!("Hello ockam_transport_ble!");
 
@@ -191,10 +162,6 @@ fn main() -> core::result::Result<(), u32> {
 
         // - the actual example! ----------------------------------------------
 
-        // Create an echoer worker - TODO race condition if we create this after BleTransport ?
-        println!("[main] Create an echoer worker");
-        ctx.start_worker("echoer", Echoer).await?;
-
         // Initialize the BLE Transport.
         println!("[main] Initialize the BLE Transport.");
         let ble = BleTransport::create(&ctx).await?;
@@ -202,6 +169,10 @@ fn main() -> core::result::Result<(), u32> {
         // Create a BLE listener and wait for incoming connections.
         println!("[main] Create a BLE listener and wait for incoming connections.");
         ble.listen(ble_server, "ockam_ble_1").await?;
+
+        // Create an echoer worker - TODO race condition if we create this after BleTransport ?
+        println!("[main] Create an echoer worker");
+        ctx.start_worker("echoer", Echoer).await?;
 
         // Don't call ctx.stop() here so this node runs forever.
         println!("[main] run forever");
