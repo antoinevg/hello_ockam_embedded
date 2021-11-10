@@ -16,10 +16,10 @@ impl Worker for Echoer {
     type Message = String;
 
     async fn handle_message(&mut self, ctx: &mut Context, msg: Routed<String>) -> Result<()> {
-        println!("Address: {}, Received: {}", ctx.address(), msg);
+        println!("[echoer] Address: {}, Received: {}", ctx.address(), msg);
 
         // Echo the message body back on its return_route.
-        println!("Echoing message '{}' back on its return_route: {}",
+        println!("[echoer] Echoing message '{}' back on its return_route: {}",
                  &msg,
                  msg.return_route());
 
