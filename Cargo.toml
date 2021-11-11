@@ -25,6 +25,7 @@ std = [
 # without the standard library.
 no_std = [
     "ockam/no_std",
+    "core2", # needed for hello_transport example # TODO delete
 ]
 
 # Feature: "alloc" enables support for heap allocation on "no_std"
@@ -86,6 +87,8 @@ nucleo-h7xx = { version = "0.1.1 ", default-features = false, features = ["log-i
 #bluenrg = { version = "0.1.0", default-features = false, features = ["ms"], optional = true }
 #bluenrg = { path = "../../Ockam.forks/bluenrg.git", features = ["ms"], optional = true }
 bluenrg = { git = "https://github.com/antoinevg/bluenrg.git", rev = "84cc954", features = ["ms"], optional = true }
+bluetooth-hci = { version = "0.1.0", default-features = false, features = ["version-4-2"] }
+core2 = { version = "0.3", default-features = false, optional = true }
 
 [target.'cfg(all(target_arch="wasm32",target_os="unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
