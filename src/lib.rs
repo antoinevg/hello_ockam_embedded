@@ -36,7 +36,7 @@ pub mod boards {
         let ccdr = configure(pwrcfg, rcc, syscfg);
 
         unsafe {
-            let swo_frequency = 4_000_000;
+            let swo_frequency = 2_000_000;
             bsp::itm::enable_itm(&mut cp.DCB,
                                  &dp.DBGMCU,
                                  &mut cp.ITM,
