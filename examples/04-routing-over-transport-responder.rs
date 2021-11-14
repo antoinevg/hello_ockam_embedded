@@ -162,21 +162,15 @@ fn main() -> core::result::Result<(), u32> {
 
         // - the actual example! ----------------------------------------------
 
-        //ockam_executor::runtime::yield_now().await;
-
         // Initialize the BLE Transport.
         println!("[main] Initialize the BLE Transport.");
         let ble = BleTransport::create(&ctx).await?;
-
-        //ockam_executor::runtime::yield_now().await;
 
         // Create a BLE listener and wait for incoming connections.
         println!("[main] Create a BLE listener and wait for incoming connections.");
         ble.listen(ble_server, "ockam_ble_1").await?;
 
-        //ockam_executor::runtime::yield_now().await;
-
-        // Create an echoer worker - TODO race condition if we create this after BleTransport ?
+        // Create an echoer worker
         println!("[main] Create an echoer worker");
         ctx.start_worker("echoer", Echoer).await?;
 

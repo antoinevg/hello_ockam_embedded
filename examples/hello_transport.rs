@@ -258,6 +258,7 @@ fn main() -> Result<(), u32> {
             let mut tx_buffer = [0 as u8; CHARACTERISTIC_VALUE_LENGTH];
             let mut tx_cursor = Cursor::new(&mut tx_buffer[..]);
             match write!(&mut tx_cursor, "server counter: {}", counter / 100_000) {
+            //match write!(&mut tx_cursor, "0123456789012345678 server: {}", counter / 100_000) {
                 Ok(()) => (),
                 Err(e) => {
                     println!("failed write: {:?}", e);
