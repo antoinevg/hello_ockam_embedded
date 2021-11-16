@@ -42,7 +42,7 @@ no_main = [
 ]
 
 # Feature: "debug_alloc" enables a debug version of the heap allocator
-#debug_alloc = [ "ockam_executor/debug_alloc" ]
+debug_alloc = [ "ockam_executor/debug_alloc" ]
 
 cortexm = [
     "alloc-cortex-m",
