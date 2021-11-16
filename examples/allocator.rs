@@ -11,13 +11,13 @@ const HEAP_SIZE: usize = 1024 * 768; // in bytes
 #[cfg(feature = "atsame54")]
 const HEAP_SIZE: usize = 1024 * 64;  // in bytes
 #[cfg(feature = "stm32f4")]
-const HEAP_SIZE: usize = 1024 * 84;  // in bytes
+const HEAP_SIZE: usize = 1024 * 64;  // in bytes
 #[cfg(feature = "stm32h7")]
 const HEAP_SIZE: usize = 1024 * 64; // in bytes
 
 #[cfg(not(feature = "debug_alloc"))]
 #[global_allocator]
-//#[link_section = ".sram1_bss"]
+#[cfg_attr(feature = "stm32h7", link_section = ".sram1_bss")]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 #[cfg(feature = "debug_alloc")]
