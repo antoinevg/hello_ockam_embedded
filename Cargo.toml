@@ -8,8 +8,8 @@ version = "0.1.0"
 
 [features]
 #default = ["stm32h7", "bsp_nucleo_h7xx"]
-#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
-default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
+default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
+#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy", "no_main"]
@@ -51,7 +51,7 @@ no_main = [
 ]
 
 # Feature: "debug_alloc" enables a debug version of the heap allocator
-debug_alloc = [ "ockam_executor/debug_alloc" ]
+#debug_alloc = [ "ockam_executor/debug_alloc" ]
 
 cortexm = [
     "alloc-cortex-m",
