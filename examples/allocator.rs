@@ -3,7 +3,6 @@ use core::alloc::Layout;
 #[cfg(not(feature = "debug_alloc"))]
 use alloc_cortex_m::CortexMHeap;
 
-
 // - heap ---------------------------------------------------------------------
 
 #[cfg(feature = "qemu")]
@@ -13,11 +12,11 @@ const HEAP_SIZE: usize = 1024 * 64;  // in bytes
 #[cfg(feature = "stm32f4")]
 const HEAP_SIZE: usize = 1024 * 64;  // in bytes
 #[cfg(feature = "stm32h7")]
-const HEAP_SIZE: usize = 1024 * 64; // in bytes
+const HEAP_SIZE: usize = 1024 * 256; // in bytes
 
 #[cfg(not(feature = "debug_alloc"))]
 #[global_allocator]
-#[cfg_attr(feature = "stm32h7", link_section = ".sram1_bss")]
+#[cfg_attr(feature = "stm32h7", link_section = ".axisram_heap")]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
 #[cfg(feature = "debug_alloc")]
@@ -38,11 +37,11 @@ pub fn init() {
 
 
 pub fn stats(id: usize) {
-    crate::println!("#{} => Heap usage: {} / {}  free: {}\n",
-                    id,
-                    ALLOCATOR.used(),
-                    HEAP_SIZE,
-                    ALLOCATOR.free());
+    debug!("#{} => Heap usage: {} / {}  free: {}\n",
+           id,
+           ALLOCATOR.used(),
+           HEAP_SIZE,
+           ALLOCATOR.free());
 }
 
 
@@ -51,7 +50,7 @@ pub fn stats(id: usize) {
 
 #[alloc_error_handler]
 fn alloc_error(layout: Layout) -> ! {
-    crate::println!("examples/allocator.rs - alloc error: {:?}", layout);
+    error!("examples/allocator.rs - alloc error: {:?}", layout);
     cortex_m::asm::bkpt();
     loop {}
 }

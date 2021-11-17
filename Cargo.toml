@@ -8,8 +8,8 @@ version = "0.1.0"
 
 [features]
 #default = ["stm32h7", "bsp_nucleo_h7xx"]
-default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
-#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
+#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
+default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy", "no_main"]
@@ -19,19 +19,28 @@ default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
 # be available on a standard platform.
 std = [
     "ockam/default",
+    "ockam_core/default",
+    "ockam_executor/default",
+    "ockam_transport_ble/default",
 ]
 
 # Feature: "no_std" enables functionality required for platforms
 # without the standard library.
 no_std = [
-    "ockam/no_std",
     "core2", # needed for hello_transport example # TODO delete
+    "ockam/no_std",
+    "ockam_core/no_std",
+    "ockam_executor/no_std",
+    "ockam_transport_ble/no_std",
 ]
 
 # Feature: "alloc" enables support for heap allocation on "no_std"
 # platforms, requires nightly.
 alloc = [
     "ockam/alloc",
+    "ockam_core/alloc",
+    "ockam_executor/alloc",
+    "ockam_transport_ble/alloc",
 ]
 
 # Feature: "no_main" allows you to define an ockam node inside your
@@ -67,9 +76,9 @@ bsp_nucleo_h7xx = [
 [dependencies]
 #ockam = { version = "0.36", default_features = false, features = ["software_vault"] }
 #ockam = { git = "https://github.com/ockam-network/ockam.git", branch = "develop",
-ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["no_std", "alloc", "software_vault"] }
-ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", default_features = false, features = ["no_std", "alloc"] }
-ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, features = ["no_std", "alloc"] }
+ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["software_vault"] }
+ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", default_features = false }
+ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false }
 ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 
 # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
