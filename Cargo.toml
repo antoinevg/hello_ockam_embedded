@@ -10,8 +10,8 @@ version = "0.1.0"
 
 [features]
 #default = ["atsame54", "no_main"]
-default = ["stm32h7", "bsp_nucleo_h7xx"]
-#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
+#default = ["stm32h7", "bsp_nucleo_h7xx"]
+default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
 #default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
