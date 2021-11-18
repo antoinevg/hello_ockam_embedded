@@ -13,6 +13,9 @@ use bsp::hal::prelude::*;
 use bsp::led::Led;
 use bsp::loggit as println;
 
+#[cfg_attr(not(feature = "std"), macro_use)]
+extern crate ockam_executor; // for error logging
+
 mod allocator;
 
 

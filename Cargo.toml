@@ -6,9 +6,12 @@ readme = "README.md"
 name = "hello-ockam"
 version = "0.1.0"
 
+# - features ------------------------------------------------------------------
+
 [features]
-#default = ["stm32h7", "bsp_nucleo_h7xx"]
-default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
+#default = ["atsame54", "no_main"]
+default = ["stm32h7", "bsp_nucleo_h7xx"]
+#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
 #default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
@@ -57,15 +60,48 @@ cortexm = [
     "alloc-cortex-m",
     "cortex-m",
     "cortex-m-rt",
-    #"cortex-m-semihosting",
-    #"panic-semihosting",
-    "panic-itm",
 ]
 
-qemu = ["no_std", "alloc", "cortexm"]
-atsame54 = ["no_std", "alloc", "cortexm", "atsame54_xpro", "ockam_transport_ble/atsame54", "bluenrg"]
-stm32f4 = ["no_std", "alloc", "cortexm", "stm32f4xx-hal", "ockam_transport_ble/stm32f4", "bluenrg"]
-stm32h7 = ["no_std", "alloc", "cortexm", "ockam_transport_ble/stm32h7", "bluenrg"]
+
+# Targets
+
+qemu = [
+     "no_std",
+     "alloc",
+     "cortexm",
+     "panic-itm",
+]
+atsame54 = [
+    "no_std",
+    "alloc",
+    "cortexm",
+    "panic-semihosting",
+    "cortex-m-semihosting",
+    "atsame54_xpro",
+    "embedded-hal", # TODO atsame54_xpro declares hal::hal as private
+    "ockam_transport_ble/atsame54",
+    "bluenrg",
+]
+stm32f4 = [
+    "no_std",
+    "alloc",
+    "cortexm",
+    "panic-itm",
+    "stm32f4xx-hal",
+    "ockam_transport_ble/stm32f4",
+    "bluenrg"
+]
+stm32h7 = [
+    "no_std",
+    "alloc",
+    "cortexm",
+    "panic-itm",
+    "ockam_transport_ble/stm32h7",
+    "bluenrg"
+]
+
+# Boards
+
 bsp_daisy = [
     "daisy_bsp",
 ]
@@ -73,7 +109,12 @@ bsp_nucleo_h7xx = [
     "nucleo-h7xx",
 ]
 
+
+# - dependencies --------------------------------------------------------------
+
 [dependencies]
+
+# ockam
 #ockam = { version = "0.36", default_features = false, features = ["software_vault"] }
 #ockam = { git = "https://github.com/ockam-network/ockam.git", branch = "develop",
 ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["software_vault"] }
@@ -81,15 +122,19 @@ ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", defa
 ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false }
 ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 
-# TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
-alloc-cortex-m = { version = "0.4.1", optional = true }
+# cortex-m
+alloc-cortex-m = { version = "0.4.1", optional = true } # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
 cortex-m = { version = "0.7.3", optional = true }
 cortex-m-rt = { version = "0.6.14", optional = true }
 cortex-m-semihosting = { version = "0.3.7", optional = true }
 panic-semihosting = { version = "0.5.6", optional = true }
 panic-itm = { version = "0.4.2", optional = true }
 
+# atsame
 atsame54_xpro = { version = "0.2.0", optional = true }
+embedded-hal = { version = "0.2.3", optional = true }
+
+# stm32
 stm32f4xx-hal = { version = "0.9.0", features = ["rt", "stm32f407"], optional = true }
 daisy_bsp = { version = "0.4.2", features = ["seed", "log-itm"], optional = true }
 nucleo-h7xx = { version = "0.1.1 ", default-features = false, features = ["log-itm"], optional = true }
@@ -98,10 +143,14 @@ nucleo-h7xx = { version = "0.1.1 ", default-features = false, features = ["log-i
 #bluenrg = { path = "../../Ockam.forks/bluenrg.git", features = ["ms"], optional = true }
 bluenrg = { git = "https://github.com/antoinevg/bluenrg.git", rev = "84cc954", features = ["ms"], optional = true }
 bluetooth-hci = { version = "0.1.0", default-features = false, features = ["version-4-2"] }
-core2 = { version = "0.3", default-features = false, optional = true }
 
+# other
+core2 = { version = "0.3", default-features = false, optional = true }
 [target.'cfg(all(target_arch="wasm32",target_os="unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
+
+
+# - profiles ------------------------------------------------------------------
 
 [profile.dev]
 debug = true

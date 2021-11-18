@@ -8,9 +8,9 @@ use alloc_cortex_m::CortexMHeap;
 #[cfg(feature = "qemu")]
 const HEAP_SIZE: usize = 1024 * 768; // in bytes
 #[cfg(feature = "atsame54")]
-const HEAP_SIZE: usize = 1024 * 64;  // in bytes
+const HEAP_SIZE: usize = 1024 *  64; // in bytes
 #[cfg(feature = "stm32f4")]
-const HEAP_SIZE: usize = 1024 * 64;  // in bytes
+const HEAP_SIZE: usize = 1024 * 128; // in bytes
 #[cfg(feature = "stm32h7")]
 const HEAP_SIZE: usize = 1024 * 256; // in bytes
 

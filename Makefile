@@ -14,8 +14,23 @@ no_std:
 qemu:
 	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="qemu"
 
+nucleo-h7xx:
+	cp memory-nucleo-h7xx.x	memory.x
+	cargo +nightly -Z unstable-options \
+		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-itm.gdb'" \
+		run --example $(example) \
+			--target thumbv7em-none-eabihf \
+			--no-default-features \
+			--features="stm32h7,bsp_nucleo_h7xx,no_main"
+
 atsame54:
-	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="atsame54"
+	cp memory-atsame54.x memory.x
+	cargo +nightly -Z unstable-options \
+		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
+		run --example $(example) \
+			--target thumbv7em-none-eabihf \
+			--no-default-features \
+			--features="atsame54,no_main"
 
 stm32f4:
 	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="stm32f4"

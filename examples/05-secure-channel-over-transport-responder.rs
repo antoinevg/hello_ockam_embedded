@@ -25,7 +25,6 @@ use daisy_bsp as bsp;
 use nucleo_h7xx as bsp;
 
 use bsp::hal;
-//use bsp::loggit as println;
 
 use hal::prelude::*;
 use hal::delay::Delay;
@@ -141,7 +140,6 @@ fn main() -> core::result::Result<(), u32> {
 
         // - bluenrg ----------------------------------------------------------
 
-        //#[link_section = ".axisram.buffers"]
         static mut RX_BUFFER: [u8; 1024] = [0; 1024]; // TODO how to calculate
         let mut bluetooth = bluenrg::BlueNRG::new(
             unsafe { &mut RX_BUFFER }, // TODO
@@ -156,7 +154,7 @@ fn main() -> core::result::Result<(), u32> {
         use ockam_transport_ble::driver::BleServer;
 
         let mut ble_adapter = BleAdapter::with_interface(spi3, bluetooth);
-        ble_adapter.reset(&mut timer)?;
+        ble_adapter.reset(&mut timer, hal::time::MilliSeconds(100).into())?;
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
