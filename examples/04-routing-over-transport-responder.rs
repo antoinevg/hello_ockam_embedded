@@ -222,7 +222,7 @@ fn main() -> core::result::Result<(), u32> {
         // - bluenrg ----------------------------------------------------------
 
         static mut RX_BUFFER: [u8; 1024] = [0; 1024];
-        let mut bluetooth = bluenrg::BlueNRG::new(
+        let mut bluenrg = bluenrg::BlueNRG::new(
             unsafe { &mut RX_BUFFER },
             spi_nss,
             spi_irq,
@@ -234,7 +234,7 @@ fn main() -> core::result::Result<(), u32> {
         use ockam_transport_ble::driver::bluetooth_hci::BleAdapter;
         use ockam_transport_ble::driver::BleServer;
 
-        let mut ble_adapter = BleAdapter::with_interface(spi, bluetooth);
+        let mut ble_adapter = BleAdapter::with_interface(spi, bluenrg);
         ble_adapter.reset(&mut timer, MilliSeconds(50).into())?;
 
         let ble_server = BleServer::with_adapter(ble_adapter);
