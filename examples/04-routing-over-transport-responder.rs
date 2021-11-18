@@ -97,7 +97,7 @@ fn main() -> core::result::Result<(), u32> {
     // - initialize allocator -------------------------------------------------
 
     allocator::init();
-    //allocator::stats(0);
+    allocator::stats(0);
 
     // - ockam::node ----------------------------------------------------------
 
@@ -218,7 +218,6 @@ fn main() -> core::result::Result<(), u32> {
         };
 
         println!("Hello ockam_transport_ble!");
-        //allocator::stats(10);
 
         // - bluenrg ----------------------------------------------------------
 
@@ -240,27 +239,19 @@ fn main() -> core::result::Result<(), u32> {
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
-        //allocator::stats(20);
-
         // - the actual example! ----------------------------------------------
 
         // Initialize the BLE Transport.
         println!("[main] Initialize the BLE Transport.");
         let ble = BleTransport::create(&ctx).await?;
 
-        //allocator::stats(30);
-
         // Create a BLE listener and wait for incoming connections.
         println!("[main] Create a BLE listener and wait for incoming connections.");
         ble.listen(ble_server, "ockam_ble_1").await?;
 
-        //allocator::stats(40);
-
         // Create an echoer worker
         println!("[main] Create an echoer worker");
         ctx.start_worker("echoer", Echoer).await?;
-
-        //allocator::stats(50);
 
         // Don't call ctx.stop() here so this node runs forever.
         println!("[main] run forever");

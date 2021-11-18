@@ -44,7 +44,6 @@ macro_rules! println {
     }};
 }
 
-
 // - modules ------------------------------------------------------------------
 
 mod allocator;
@@ -62,8 +61,8 @@ fn entry() -> ! {
     loop {}
 }
 
-
 fn main() -> core::result::Result<(), u32> {
+
     // - initialize allocator -------------------------------------------------
 
     allocator::init();
@@ -140,9 +139,9 @@ fn main() -> core::result::Result<(), u32> {
 
         // - bluenrg ----------------------------------------------------------
 
-        static mut RX_BUFFER: [u8; 1024] = [0; 1024]; // TODO how to calculate
+        static mut RX_BUFFER: [u8; 1024] = [0; 1024];
         let mut bluetooth = bluenrg::BlueNRG::new(
-            unsafe { &mut RX_BUFFER }, // TODO
+            unsafe { &mut RX_BUFFER },
             spi3_nss,
             spi3_irq,
             spi3_rst
@@ -188,11 +187,10 @@ fn main() -> core::result::Result<(), u32> {
         Ok(())
     }
 
-    //println!("main 3");
 
     // - main loop ------------------------------------------------------------
 
-    //println!("entering main loop");
+    println!("entering main loop");
     loop {
         cortex_m::asm::wfi();
     }
