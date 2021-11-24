@@ -2,6 +2,7 @@
 
 ## Install dependencies
 
+    rustup toolchain install nightly
     rustup target add thumbv7em-none-eabihf --toolchain nightly
     brew install qemu
 
@@ -148,7 +149,7 @@ Loking at top of board with USB on top:
 ```
 STM32F3-DISCOVERY
 
-Loking at top of board with USB on top:
+Looking at top of board with USB on top:
 
     P1-3V ---------------- [3V3] red          P1-3V
     P1-GND --------------- [GND] black        P1-NRST
@@ -158,7 +159,31 @@ Loking at top of board with USB on top:
     P2-PD01                                   P2-PD02  GPIOD2  ----- [RST] green
     P2-PC12  SPI3_MOSI --- [SDI] purple       P2-PD00  IRQ? -------- [IRQ] yellow
     P2-PC10  SPI3_SCK ---- [CLK] blue         P2-PC11  SPI3_MISO --- [SDO] brown
-    P2-PA14                                   P2-PA15  SPI3_NSS ---- [CSN] orange?
+    P2-PA14                                   P2-PA15  SPI3_NSS ---- [CSN] orange
     ...                                       ...
 
+```
+
+
+### PIC32MX170F256B
+
+```
+PIC32MX170F256B
+
+Loking at top of chip with notch on top
+
+    01          28 [AVdd] -------------- [3V3] red
+    02          27 [AVss] -------------- [GND] black
+    03          26
+    04          25 [RPB14] SCK1 -------- [CLK] blue
+    05          24
+    06          23
+    07          22 [RPB11] ------------- [RST] green  <- config as input
+    08          21 [RPB10] ------------- [IRQ] yellow -> config as output
+    09          20
+    10          19
+    11          18
+    12          17 [RPB8.0100] SDI1 ---- [SDO] brown
+    13          16 [RPB7.0100] SS1 ----- [CSN] orange ????
+    14          15 [RPB6.0011] SDO1 ---- [SDI] purple
 ```
