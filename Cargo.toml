@@ -142,7 +142,7 @@ nucleo-h7xx = { version = "0.1.1 ", default-features = false, features = ["log-i
 
 #bluenrg = { version = "0.1.0", default-features = false, features = ["ms"], optional = true }
 #bluenrg = { path = "../../Ockam.forks/bluenrg.git", features = ["ms"], optional = true }
-bluenrg = { git = "https://github.com/antoinevg/bluenrg.git", rev = "84cc954", features = ["ms"], optional = true }
+bluenrg = { git = "https://github.com/antoinevg/bluenrg.git", rev = "c7117b9", features = ["ms"], optional = true }
 bluetooth-hci = { version = "0.1.0", default-features = false, features = ["version-4-2"] }
 
 # other
