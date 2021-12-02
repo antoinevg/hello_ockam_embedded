@@ -1,13 +1,6 @@
 //! This node starts a ble listener and an echoer worker.  It then
 //! runs forever waiting for messages.
 
-#![allow(
-    dead_code,
-    unused_imports,
-    unused_mut,
-    unused_variables,
-)]
-
 // - features -----------------------------------------------------------------
 
 #![cfg_attr(feature = "alloc", feature(alloc_error_handler))]
@@ -23,8 +16,6 @@ use panic_semihosting as _;
 // atsame54
 #[cfg(feature = "atsame54")]
 extern crate atsame54_xpro as hal;
-#[cfg(feature = "atsame54")]
-use embedded_hal;
 
 // stm32f4
 #[cfg(feature = "stm32f4")]
@@ -54,22 +45,14 @@ extern crate ockam_executor;
 
 // hal version mismatch
 #[cfg(not(feature = "atsame54"))]
-use hal::time::NanoSeconds;
-#[cfg(not(feature = "atsame54"))]
 use hal::time::MilliSeconds;
-#[cfg(feature = "atsame54")]
-use hal::time::Nanoseconds as NanoSeconds;
 #[cfg(feature = "atsame54")]
 use hal::time::Milliseconds as MilliSeconds;
 
 
 // - dependencies -------------------------------------------------------------
 
-use hal::prelude::*;
 use hal::pac;
-
-use embedded_hal::spi;
-
 use ockam::println;
 
 
@@ -113,12 +96,9 @@ fn main() -> core::result::Result<(), u32> {
         #[cfg(feature = "atsame54")]
         let (mut timer, spi, spi_nss, spi_irq, spi_rst) = {
             use hal::clock::GenericClockController;
-            use hal::pac::{CorePeripherals, Peripherals};
             use hal::prelude::*;
             use hal::timer::TimerCounter;
-            use hal::watchdog::{Watchdog, WatchdogTimeout};
 
-            let cp = pac::CorePeripherals::take().unwrap();
             let mut peripherals = pac::Peripherals::take().unwrap();
 
             let mut clocks = GenericClockController::with_internal_32kosc(
@@ -131,7 +111,7 @@ fn main() -> core::result::Result<(), u32> {
 
             let gclk0 = clocks.gclk0();
             let tc45 = clocks.tc4_tc5(&gclk0).unwrap();
-            let mut timer = TimerCounter::tc4_(&tc45, peripherals.TC4, &mut peripherals.MCLK);
+            let timer = TimerCounter::tc4_(&tc45, peripherals.TC4, &mut peripherals.MCLK);
 
             let mut pins = hal::Pins::new(peripherals.PORT);
 
@@ -141,7 +121,7 @@ fn main() -> core::result::Result<(), u32> {
             let spi6_csn = pins.spi6_ss.into_push_pull_output(&mut pins.port);
             let spi6_rst = pins.pb01.into_push_pull_output(&mut pins.port);
 
-            let mut spi6 = hal::pins::SPI {
+            let spi6 = hal::pins::SPI {
                 sck: pins.sck,
                 mosi: pins.mosi,   // sdi
                 miso: pins.miso,   // sdo
@@ -158,14 +138,16 @@ fn main() -> core::result::Result<(), u32> {
 
         #[cfg(feature = "stm32h7")]
         let (mut timer, spi, spi_nss, spi_irq, spi_rst) = {
-            use hal::timer::Timer;
-            use hello_ockam::boards;
+            use embedded_hal::spi;
+            use embedded_hal::digital::v2::OutputPin;
+            use hal::prelude::*;
 
             let board = unsafe { bsp::Board::steal() };
-            let cp = cortex_m::Peripherals::take().unwrap();
             let dp = pac::Peripherals::take().unwrap();
-            let ccdr = boards::freeze_clocks_with_config(
-                dp.PWR.constrain(), dp.RCC.constrain(), &dp.SYSCFG,
+            let ccdr = board.freeze_clocks_with(
+                dp.PWR.constrain(),
+                dp.RCC.constrain(),
+                &dp.SYSCFG,
                 |pwrcfg, rcc, syscfg| {
                     rcc.sys_ck(96.mhz())                // system clock @ 96 MHz
                         // pll1 drives system clock
@@ -187,7 +169,7 @@ fn main() -> core::result::Result<(), u32> {
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
 
-            let mut timer = dp.TIM7.timer(1.hz(), ccdr.peripheral.TIM7, &ccdr.clocks);
+            let timer = dp.TIM7.timer(1.hz(), ccdr.peripheral.TIM7, &ccdr.clocks);
 
             let spi3_irq  = pins.d43.into_pull_down_input();
             let spi3_rst  = pins.d44.into_push_pull_output();
@@ -195,7 +177,6 @@ fn main() -> core::result::Result<(), u32> {
             let spi3_miso = pins.d46.into_alternate_af6().set_speed(hal::gpio::Speed::VeryHigh);
             let spi3_mosi = pins.d47.into_alternate_af6().set_speed(hal::gpio::Speed::VeryHigh);
 
-            use nucleo_h7xx::embedded_hal::digital::v2::OutputPin;
             let mut spi3_nss  = pins.d20.into_push_pull_output();
             spi3_nss.set_high().ok();
 
@@ -206,7 +187,7 @@ fn main() -> core::result::Result<(), u32> {
                 }
             );
 
-            let mut spi3 = dp.SPI3.spi(
+            let spi3 = dp.SPI3.spi(
                 (spi3_sck, spi3_miso, spi3_mosi),
                 config,
                 3.mhz(),
@@ -222,7 +203,7 @@ fn main() -> core::result::Result<(), u32> {
         // - bluenrg ----------------------------------------------------------
 
         static mut RX_BUFFER: [u8; 1024] = [0; 1024];
-        let mut bluenrg = bluenrg::BlueNRG::new(
+        let bluenrg = bluenrg::BlueNRG::new(
             unsafe { &mut RX_BUFFER },
             spi_nss,
             spi_irq,
@@ -238,6 +219,7 @@ fn main() -> core::result::Result<(), u32> {
         ble_adapter.reset(&mut timer, MilliSeconds(50).into())?;
 
         let ble_server = BleServer::with_adapter(ble_adapter);
+
 
         // - the actual example! ----------------------------------------------
 
