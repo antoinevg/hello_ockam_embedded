@@ -14,29 +14,34 @@ no_std:
 qemu:
 	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="qemu"
 
+
+# 2048 kB Flash, 512 kB RAM
 nucleo-h7xx:
 	cp memory-nucleo-h7xx.x	memory.x
 	cargo +nightly -Z unstable-options \
 		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-itm.gdb'" \
-		build --example $(example) \
+		run --example $(example) \
+			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
 			--features="stm32h7,bsp_nucleo_h7xx,no_main"
 
+# 1024 kB Flash, 256 kB RAM
 atsame54:
 	cp memory-atsame54.x memory.x
 	cargo +nightly -Z unstable-options \
 		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
-		build --example $(example) \
+		run --example $(example) \
+			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
 			--features="atsame54,no_main"
 
 stm32f4:
-	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="stm32f4"
+	cargo +nightly run --example $(example) --release --target thumbv7em-none-eabihf --no-default-features --features="stm32f4"
 
 daisy:
-	cargo +nightly run --example $(example) --target thumbv7em-none-eabihf --no-default-features --features="stm32h7, daisy"
+	cargo +nightly run --example $(example) --release --target thumbv7em-none-eabihf --no-default-features --features="stm32h7, daisy"
 
 wasm:
 	cargo build --target=wasm32-unknown-unknown --no-default-features --features="alloc, no_std"

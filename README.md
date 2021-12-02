@@ -62,14 +62,14 @@ Looking at top of board with USB DEBUG on top and EXT1 on right:
 
     EXT2-01  ID                               EXT2-02  GND
     EXT2-03  PB00                             EXT2-04  PA03
-    EXT2-05  PB01 GPIO1 ----- [RST] green     EXT2-06  PB06  GPIO2
+    EXT2-05  PB01 GPIO1 ----- [RST] green     EXT2-06  PB06 GPIO2
     EXT2-07  PB14                             EXT2-08  PB15
-    EXT2-09  PD00 IRQ0 ------ [IRQ] yellow    EXT2-10  PB02  SPI_SS_B
+    EXT2-09  PD00 IRQ0 ------ [IRQ] yellow    EXT2-10  PB02 SPI_SS_B
     EXT2-11  PD08                             EXT2-12  PD09
-    EXT2-13  PB17                             EXT2-14  PB16
-    EXT2-15  PC06 SPI_SS_A -- [CSN] orange    EXT2-16  PC04  SPI_MOSI --- [SDI] purple
-    EXT2-17  PC07 SPI_MISO -- [SDO] brown     EXT2-18  PC05  SPI_SCK ---- [CLK] blue
-    EXT2-19  GND ------------ [GND] black     EXT2-20  VCC -------------- [3V3] red
+    EXT2-13  PB17 USART_RX                    EXT2-14  PB16 USART_TX
+    EXT2-15  PC06 SPI_SS_A -- [CSN] orange    EXT2-16  PC04 SPI_MOSI --- [SDI] purple
+    EXT2-17  PC07 SPI_MISO -- [SDO] brown     EXT2-18  PC05 SPI_SCK ---- [CLK] blue
+    EXT2-19  GND ------------ [GND] black     EXT2-20  VCC ------------- [3V3] red
 ```
 
 ### Nucleo-H745
@@ -186,4 +186,8 @@ Loking at top of chip with notch on top
     12          17 [RPB8.0100] SDI1 ---- [SDO] brown
     13          16 [RPB7.0100] SS1 ----- [CSN] orange ????
     14          15 [RPB6.0011] SDO1 ---- [SDI] purple
+
+
+UART for debug output is on pin 10
+
 ```
