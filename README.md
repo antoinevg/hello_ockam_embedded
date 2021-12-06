@@ -77,7 +77,7 @@ Looking at top of board with USB DEBUG on top and EXT1 on right:
 ```
 Nucleo-H745
 
-Loking at top of board with USB on top:
+Looking at top of board with USB on top:
 
     [ - CN8 -------------------------------------------------- ]
 
@@ -109,7 +109,7 @@ Loking at top of board with USB on top:
 ```
 Daisy Seed - https://www.electro-smith.com/daisy/daisy
 
-Loking at top of board with USB on bottom:
+Looking at top of board with USB on bottom:
 
     P30  [23]                                 P11  [10] SPI1 MOSI -- [SDI] purple
     P31  [24]                                 P10  [09] SPI1 MISO -- [SDO] brown
@@ -128,7 +128,7 @@ Loking at top of board with USB on bottom:
 ```
 STM32F4-DISCOVERY
 
-Loking at top of board with USB on top:
+Looking at top of board with USB on top:
 
     P1-GND --------------- [GND] black        P1-GND
     P1-5V                                     P1-5V
@@ -170,7 +170,7 @@ Looking at top of board with USB on top:
 ```
 PIC32MX170F256B
 
-Loking at top of chip with notch on top
+Looking at top of chip with notch on top:
 
     01          28 [AVdd] -------------- [3V3] red
     02          27 [AVss] -------------- [GND] black
