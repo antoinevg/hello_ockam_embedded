@@ -53,7 +53,6 @@ use hal::time::Milliseconds as MilliSeconds;
 // - dependencies -------------------------------------------------------------
 
 use hal::pac;
-use ockam::println;
 
 
 // - modules ------------------------------------------------------------------
@@ -84,8 +83,8 @@ fn main() -> core::result::Result<(), u32> {
 
     // - ockam::node ----------------------------------------------------------
 
-    use hello_ockam::Echoer;
-    use ockam::{Context, Result, Entity, TrustEveryonePolicy, Vault};
+    use ockam::compat::{boxed::Box, string::String};
+    use ockam::{Context, Result, Routed, Entity, TrustEveryonePolicy, Vault, Worker};
     use ockam_transport_ble::BleTransport;
 
     #[ockam::node]
@@ -223,6 +222,26 @@ fn main() -> core::result::Result<(), u32> {
 
         // - the actual example! ----------------------------------------------
 
+        // Define an Echoer worker that prints any message it receives and
+        // echoes it back on its return route.
+        #[ockam::worker]
+        impl Worker for Echoer {
+            type Context = Context;
+            type Message = String;
+
+            async fn handle_message(&mut self, ctx: &mut Context, msg: Routed<String>) -> Result<()> {
+                println!("\n[echoer] [✓] Address: {}, Received: {}", ctx.address(), msg);
+
+                // Echo the message body back on its return_route.
+                println!("[echoer] [✓] Echoing message '{}' back on its return_route: {}",
+                         &msg,
+                         msg.return_route());
+
+                ctx.send(msg.return_route(), msg.body()).await
+            }
+        }
+        struct Echoer;
+
         // Create an echoer worker
         println!("[main] Create an echoer worker");
         ctx.start_worker("echoer", Echoer).await?;
@@ -232,17 +251,20 @@ fn main() -> core::result::Result<(), u32> {
         let ble = BleTransport::create(&ctx).await?;
 
         // Create a Vault to safely store secret keys for Bob.
+        println!("[main] Create a Vault to safely store secret keys for Bob.");
         let vault = Vault::create(&ctx).await?;
 
         // Create an Entity to represent Bob.
+        println!("[main] Create an Entity to represent Bob.");
         let mut bob = Entity::create(&ctx, &vault).await?;
 
         // Create a BLE listener and wait for incoming connections.
-        println!("[main] Create a BLE listener and wait for incoming connections.");
+        println!("[main] Create a BLE listener that will wait for incoming connections.");
         ble.listen(ble_server, "ockam_ble_1").await?;
 
         // Create a secure channel listener for Bob that will wait for requests to
         // initiate an Authenticated Key Exchange.
+        println!("[main] Create a secure channel listener for Bob.");
         bob.create_secure_channel_listener("bob_listener", TrustEveryonePolicy)
             .await?;
 
