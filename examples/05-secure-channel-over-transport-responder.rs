@@ -220,7 +220,7 @@ fn main() -> core::result::Result<(), u32> {
         let ble_server = BleServer::with_adapter(ble_adapter);
 
 
-        // - the actual example! ----------------------------------------------
+        // - example code -----------------------------------------------------
 
         // Define an Echoer worker that prints any message it receives and
         // echoes it back on its return route.
