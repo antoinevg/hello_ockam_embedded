@@ -30,7 +30,7 @@ nucleo-h7xx:
 atsame54:
 	cp memory-atsame54.x memory.x
 	cargo +nightly -Z unstable-options \
-		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
+		--config "target.cfg.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
 		run --example $(example) \
 			--release \
 			--target thumbv7em-none-eabihf \
