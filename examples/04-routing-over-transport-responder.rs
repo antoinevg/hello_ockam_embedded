@@ -3,7 +3,6 @@
 
 // - features -----------------------------------------------------------------
 
-#![cfg_attr(feature = "alloc", feature(alloc_error_handler))]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), no_main)]
 
@@ -40,8 +39,8 @@ use nucleo_h7xx::hal as hal;
 use nucleo_h7xx::hal::hal as embedded_hal;
 
 // logging macros
-#[cfg_attr(not(feature = "std"), macro_use)]
-extern crate ockam_executor;
+#[macro_use]
+extern crate tracing;
 
 // hal version mismatch
 #[cfg(not(feature = "atsame54"))]
@@ -55,10 +54,13 @@ use hal::time::Milliseconds as MilliSeconds;
 use hal::pac;
 use ockam::println;
 
+use hello_ockam::allocator;
+use hello_ockam::tracing_subscriber;
+
 
 // - modules ------------------------------------------------------------------
 
-mod allocator;
+mod echoer;
 
 
 // - entry --------------------------------------------------------------------
@@ -75,16 +77,20 @@ fn entry() -> ! {
 }
 
 
-fn main() -> core::result::Result<(), u32> {
+fn main() -> ockam::Result<()> {
 
     // - initialize allocator -------------------------------------------------
 
     allocator::init();
     allocator::stats(0);
 
+    // - initialize tracing ---------------------------------------------------
+    tracing_subscriber::setup_tracing();
+    info!("Hello ockam tracing on embedded!");
+
     // - ockam::node ----------------------------------------------------------
 
-    use hello_ockam::Echoer;
+    use echoer::Echoer;
     use ockam::{Context, Result};
     use ockam_transport_ble::BleTransport;
 
@@ -237,8 +243,10 @@ fn main() -> core::result::Result<(), u32> {
 
         // Don't call ctx.stop() here so this node runs forever.
         println!("[main] run forever");
-        Ok(())
+
+        Ok(()) as ockam::Result<()>
     }
+
 
     // - main loop ------------------------------------------------------------
 

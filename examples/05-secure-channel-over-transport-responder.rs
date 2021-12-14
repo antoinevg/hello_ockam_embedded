@@ -53,11 +53,14 @@ use hal::time::Milliseconds as MilliSeconds;
 // - dependencies -------------------------------------------------------------
 
 use hal::pac;
+use ockam::println;
 
+use hello_ockam::allocator;
+use hello_ockam::tracing_subscriber;
 
 // - modules ------------------------------------------------------------------
 
-mod allocator;
+mod echoer;
 
 
 // - entry --------------------------------------------------------------------
@@ -270,7 +273,8 @@ fn main() -> core::result::Result<(), u32> {
 
         // Don't call ctx.stop() here so this node runs forever.
         println!("[main] run forever");
-        Ok(())
+
+        Ok(()) as ockam::Result<()>
     }
 
 
