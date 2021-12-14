@@ -10,9 +10,9 @@ version = "0.1.0"
 
 [features]
 #default = ["atsame54"]
-#default = ["atsame54", "no_main"]
+default = ["atsame54", "no_main"]
 #default = ["stm32h7", "bsp_nucleo_h7xx"]
-default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
+#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
 #default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
@@ -57,20 +57,20 @@ no_main = [
 # Feature: "debug_alloc" enables a debug version of the heap allocator
 #debug_alloc = [ "ockam_executor/debug_alloc" ]
 
+# Architectures
 cortexm = [
     "alloc-cortex-m",
     "cortex-m",
     "cortex-m-rt",
 ]
 
-
-# Targets
-
+# Processors
 qemu = [
      "no_std",
      "alloc",
      "cortexm",
      "panic-itm",
+     "log-itm",
 ]
 atsame54 = [
     "no_std",
@@ -78,6 +78,7 @@ atsame54 = [
     "cortexm",
     "panic-semihosting",
     "cortex-m-semihosting",
+    "log-uart",
     "atsame54_xpro",
     "embedded-hal", # TODO atsame54_xpro declares hal::hal as private
     "ockam_transport_ble/atsame54",
@@ -88,6 +89,7 @@ stm32f4 = [
     "alloc",
     "cortexm",
     "panic-itm",
+    "log-itm",
     "stm32f4xx-hal",
     "ockam_transport_ble/stm32f4",
     "bluenrg"
@@ -97,6 +99,7 @@ stm32h7 = [
     "alloc",
     "cortexm",
     "panic-itm",
+    "log-itm",
     "ockam_transport_ble/stm32h7",
     "bluenrg"
 ]
@@ -110,6 +113,11 @@ bsp_nucleo_h7xx = [
 ]
 
 
+# Logging targets
+log-itm = []
+log-semihosting = []
+log-uart = []
+
 
 # - dependencies --------------------------------------------------------------
 
@@ -122,6 +130,7 @@ ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_featur
 ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", default_features = false, optional = true }
 ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, optional = true }
 ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
+tracing = { version = "0.1", default-features = false }
 
 # cortex-m
 alloc-cortex-m = { version = "0.4.1", optional = true } # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
