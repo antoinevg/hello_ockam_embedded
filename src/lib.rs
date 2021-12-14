@@ -1,8 +1,9 @@
+#![cfg_attr(feature = "alloc", feature(alloc_error_handler))]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(all(not(feature = "std"), feature = "cortexm"), no_std)]
 
-mod echoer;
-pub use echoer::*;
+#[macro_use]
+extern crate tracing;
 
-mod hop;
-pub use hop::*;
+pub mod allocator;
+pub mod targets;
+pub mod tracing_subscriber;
