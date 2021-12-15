@@ -38,10 +38,6 @@ use nucleo_h7xx::hal as hal;
 #[cfg(feature = "bsp_nucleo_h7xx")]
 use nucleo_h7xx::hal::hal as embedded_hal;
 
-// logging macros
-#[macro_use]
-extern crate tracing;
-
 // hal version mismatch
 #[cfg(not(feature = "atsame54"))]
 use hal::time::MilliSeconds;
@@ -147,9 +143,13 @@ fn main() -> ockam::Result<()> {
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
 
-            let spi6_irq = pins.pd00.into_pull_down_input(&mut pins.port);
-            let spi6_csn = pins.spi6_ss.into_push_pull_output(&mut pins.port);
-            let spi6_rst = pins.pb01.into_push_pull_output(&mut pins.port);
+            let (spi6_irq, spi6_csn, spi6_rst) = {
+                // looks like we're stuck on spi v1 until bluenrg upgrades
+                #[allow(deprecated)]
+                (pins.pd00.into_pull_down_input(&mut pins.port),
+                 pins.spi6_ss.into_push_pull_output(&mut pins.port),
+                 pins.pb01.into_push_pull_output(&mut pins.port))
+            };
 
             let spi6 = hal::pins::SPI {
                 sck: pins.sck,

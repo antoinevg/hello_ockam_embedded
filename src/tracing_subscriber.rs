@@ -117,7 +117,7 @@ impl field::Visit for EmbeddedVisitor {
 #[cfg(all(feature="log-uart", feature="atsame54"))]
 pub(crate) mod uart {
     use atsame54_xpro as hal;
-    use hal::gpio::v2::{Pin, PA04, PA05, AlternateC};
+    use hal::gpio::v2::{Pin, PA04, PA05};
     use hal::sercom::v2::{IoSet3, Sercom0, uart};
 
     type Rx = Pin<PA05, hal::gpio::v2::AlternateD>;
@@ -152,6 +152,7 @@ pub(crate) mod uart {
         cursor: usize,
     }
 
+    #[allow(dead_code)]
     impl<'a> BufferWriter<'a> {
         pub fn new(buffer: &'a mut [u8]) -> Self {
             BufferWriter { buffer, cursor: 0 }
