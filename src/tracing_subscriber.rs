@@ -97,7 +97,24 @@ impl field::Visit for EmbeddedVisitor {
 #[macro_export]
 macro_rules! tprintln {
     ($($arg:tt)*) => {{
+        //#[cfg(feature="log-itm")]
+        //cortex_m_semihosting::hprintln!($($arg)*).unwrap();
+
+        #[cfg(feature="log-semihosting")]
         cortex_m_semihosting::hprintln!($($arg)*).unwrap();
+
+        // dummy fallback definition
+        #[cfg(not(any(feature="log-semihosting", feature="log-itm")))]
+        {
+            use ockam_core::compat::io::Write;
+            let mut buffer = [0 as u8; 1];
+            let mut cursor = ockam_core::compat::io::Cursor::new(&mut buffer[..]);
+
+            match write!(&mut cursor, $($arg)*) {
+                Ok(()) => (),
+                Err(_) => (),
+            }
+        }
     }};
 }
 
