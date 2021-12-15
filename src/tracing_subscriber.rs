@@ -97,8 +97,14 @@ impl field::Visit for EmbeddedVisitor {
 #[macro_export]
 macro_rules! tprintln {
     ($($arg:tt)*) => {{
-        //#[cfg(feature="log-itm")]
-        //cortex_m_semihosting::hprintln!($($arg)*).unwrap();
+        #[cfg(feature="log-itm")]
+        {
+            // give the itm buffer time to empty
+            cortex_m::asm::delay(96_000_000 / 32);
+            // print output using itm peripheral
+            let itm = unsafe { &mut *cortex_m::peripheral::ITM::ptr() };
+            cortex_m::iprintln!(&mut itm.stim[0], $($arg)*);
+        }
 
         #[cfg(feature="log-semihosting")]
         cortex_m_semihosting::hprintln!($($arg)*).unwrap();
