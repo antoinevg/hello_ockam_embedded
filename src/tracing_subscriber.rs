@@ -1,7 +1,15 @@
-use tracing::{Event, Id, Metadata, Subscriber, dispatcher::Dispatch, field::{self, Field}, span::{Attributes, Record}};
+use tracing::{
+    Event,
+    Id,
+    Metadata,
+    Subscriber,
+    dispatcher::Dispatch,
+    field::{self, Field},
+    span::{Attributes, Record}
+};
 
 
-// - setup --------------------------------------------------------------------
+// - registration -------------------------------------------------------------
 
 pub fn register() {
     let subscriber = EmbeddedSubscriber::new();
@@ -21,7 +29,13 @@ pub fn register_with_uart(uart: uart::Uart) {
     tracing::debug!("tracing_subscriber::register_with_uart initialized");
 }
 
+
 // - EmbeddedSubscriber -------------------------------------------------------
+
+// TODO add a SubscriberBuilder so we can set log levels etc.
+//
+// See: https://docs.rs/tracing-subscriber/0.3.3/tracing_subscriber/fmt/struct.Subscriber.html
+//      tracing.git/tracing-subscriber/src/fmt/format/pretty.rs
 
 struct EmbeddedSubscriber;
 
@@ -31,10 +45,6 @@ impl EmbeddedSubscriber {
     }
 }
 
-// https://docs.rs/tracing-subscriber/0.3.3/tracing_subscriber/fmt/struct.Subscriber.html
-// tracing.git/tracing-subscriber/src/fmt/format/pretty.rs
-
-// TODO add a SubscriberBuilder so we can set log levels etc.
 
 impl Subscriber for EmbeddedSubscriber {
     fn enabled(&self, _metadata: &Metadata<'_>) -> bool {
@@ -42,16 +52,16 @@ impl Subscriber for EmbeddedSubscriber {
     }
 
     fn new_span(&self, _span: &Attributes<'_>) -> Id {
-        tprintln!("EmbeddedSubscriber::new_span");
+        crate::tracing_println!("EmbeddedSubscriber::new_span");
         tracing::span::Id::from_u64(0xAAAA)
     }
 
     fn record(&self, _span: &Id, _values: &Record<'_>) {
-        tprintln!("EmbeddedSubscriber::record");
+        crate::tracing_println!("EmbeddedSubscriber::record");
     }
 
     fn record_follows_from(&self, _span: &Id, _follows: &Id) {
-        tprintln!("EmbeddedSubscriber::record_follows_from");
+        crate::tracing_println!("EmbeddedSubscriber::record_follows_from");
     }
 
     fn event(&self, event: &Event<'_>) {
@@ -60,11 +70,11 @@ impl Subscriber for EmbeddedSubscriber {
     }
 
     fn enter(&self, _span: &Id) {
-        tprintln!("EmbeddedSubscriber::enter");
+        crate::tracing_println!("EmbeddedSubscriber::enter");
     }
 
     fn exit(&self, _span: &Id) {
-        tprintln!("EmbeddedSubscriber::exit");
+        crate::tracing_println!("EmbeddedSubscriber::exit");
     }
 }
 
@@ -84,33 +94,31 @@ impl EmbeddedVisitor {
 impl field::Visit for EmbeddedVisitor {
     fn record_str(&mut self, field: &Field, value: &str) {
         if field.name() == "message" {
-            tprintln!("{}", value);
+            crate::tracing_println!("{}", value);
         } else {
-            tprintln!("unknown: {}: {:?}", field.name(), value);
+            crate::tracing_println!("unknown: {}: {:?}", field.name(), value);
         }
     }
 
     fn record_debug(&mut self, field: &Field, value: &dyn core::fmt::Debug) {
         if field.name() == "message" {
-            tprintln!("{:?}", value);
+            crate::tracing_println!("{:?}", value);
         } else {
-            tprintln!("unknown: {}: {:?}", field.name(), value);
+            crate::tracing_println!("unknown: {}: {:?}", field.name(), value);
         }
     }
 }
 
 
-// - deleteme -----------------------------------------------------------------
+// - uart ---------------------------------------------------------------------
+
+// TODO this needs to be generic across Uart
 
 #[cfg(all(feature="log-uart", feature="atsame54"))]
 pub(crate) mod uart {
-
     use atsame54_xpro as hal;
     use hal::gpio::v2::{Pin, PA04, PA05, AlternateC};
     use hal::sercom::v2::{IoSet3, Sercom0, uart};
-
-    //type Rx = Pin<PB17, AlternateC>;
-    //type Tx = Pin<PB16, AlternateC>;
 
     type Rx = Pin<PA05, hal::gpio::v2::AlternateD>;
     type Tx = Pin<PA04, hal::gpio::v2::AlternateD>;
@@ -133,17 +141,71 @@ pub(crate) mod uart {
                     // `Result<(), Error>`
                     ::nb::block!(uart.write(*byte)).unwrap();
                 }
-                //cortex_m::asm::delay(96_000_000);
             }
         }};
     }
+
+    // - BufferWriter -------------------------------------------------------------
+
+    pub struct BufferWriter<'a> {
+        buffer: &'a mut [u8],
+        cursor: usize,
+    }
+
+    impl<'a> BufferWriter<'a> {
+        pub fn new(buffer: &'a mut [u8]) -> Self {
+            BufferWriter { buffer, cursor: 0 }
+        }
+
+        pub fn reset(&mut self) {
+            self.cursor = 0;
+        }
+
+        pub fn as_bytes(&self) -> &[u8] {
+            &self.buffer[0..self.cursor]
+        }
+
+        pub fn as_str(&self) -> &str {
+            core::str::from_utf8(&self.buffer[0..self.cursor]).unwrap()
+        }
+    }
+
+    impl core::fmt::Write for BufferWriter<'_> {
+        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+            let len = self.buffer.len();
+            for (i, &b) in self.buffer[self.cursor..len]
+                .iter_mut()
+                .zip(s.as_bytes().iter())
+            {
+                *i = b;
+            }
+            self.cursor = usize::min(len, self.cursor + s.as_bytes().len());
+            Ok(())
+        }
+    }
 }
-#[cfg(feature="log-uart")]
-use crate::uart_println;
+
+
+// - tracing_println ----------------------------------------------------------
+
+use crate::tracing_subscriber::uart::BufferWriter;
 
 #[macro_export]
-macro_rules! tprintln {
+macro_rules! tracing_println {
     ($($arg:tt)*) => {{
+        // dummy logger
+        #[cfg(not(any(feature="log-itm", feature="log-semihosting", feature="log-uart")))]
+        {
+            use ockam_core::compat::io::Write;
+            let mut buffer = [0 as u8; 1];
+            let mut cursor = ockam_core::compat::io::Cursor::new(&mut buffer[..]);
+
+            match write!(&mut cursor, $($arg)*) {
+                Ok(()) => (),
+                Err(_) => (),
+            }
+        }
+
         // itm logger
         #[cfg(feature="log-itm")]
         {
@@ -163,62 +225,7 @@ macro_rules! tprintln {
         {
             use atsame54_xpro as hal;
             use hal::prelude::_embedded_hal_serial_Write;
-            uart_println!($($arg)*);
-        }
-
-        // dummy logger
-        #[cfg(not(any(feature="log-itm", feature="log-semihosting", feature="log-uart")))]
-        {
-            use ockam_core::compat::io::Write;
-            let mut buffer = [0 as u8; 1];
-            let mut cursor = ockam_core::compat::io::Cursor::new(&mut buffer[..]);
-
-            match write!(&mut cursor, $($arg)*) {
-                Ok(()) => (),
-                Err(_) => (),
-            }
+            crate::uart_println!($($arg)*);
         }
     }};
-}
-
-use crate::tprintln;
-
-
-// - BufferWriter -------------------------------------------------------------
-
-pub struct BufferWriter<'a> {
-    buffer: &'a mut [u8],
-    cursor: usize,
-}
-
-impl<'a> BufferWriter<'a> {
-    pub fn new(buffer: &'a mut [u8]) -> Self {
-        BufferWriter { buffer, cursor: 0 }
-    }
-
-    pub fn reset(&mut self) {
-        self.cursor = 0;
-    }
-
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.buffer[0..self.cursor]
-    }
-
-    pub fn as_str(&self) -> &str {
-        core::str::from_utf8(&self.buffer[0..self.cursor]).unwrap()
-    }
-}
-
-impl core::fmt::Write for BufferWriter<'_> {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        let len = self.buffer.len();
-        for (i, &b) in self.buffer[self.cursor..len]
-            .iter_mut()
-            .zip(s.as_bytes().iter())
-        {
-            *i = b;
-        }
-        self.cursor = usize::min(len, self.cursor + s.as_bytes().len());
-        Ok(())
-    }
 }

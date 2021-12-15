@@ -116,7 +116,6 @@ fn main() -> ockam::Result<()> {
             let timer = TimerCounter::tc4_(&tc45, dp.TC4, &mut dp.MCLK);
 
             let mut pins = hal::Pins::new(dp.PORT);
-            //let mut pins = hal::gpio::v2::Pins::new(dp.PORT);
 
             // - configure & register uart for tracing ------------------------
             #[cfg(feature="log-semihosting")]
@@ -145,7 +144,6 @@ fn main() -> ockam::Result<()> {
                     .enable();
                 tracing_subscriber::register_with_uart(uart5);
             }
-
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
 
@@ -252,8 +250,7 @@ fn main() -> ockam::Result<()> {
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
-
-        // - the actual example! ----------------------------------------------
+        // - the example code -------------------------------------------------
 
         // Initialize the BLE Transport.
         println!("[main] Initialize the BLE Transport.");
