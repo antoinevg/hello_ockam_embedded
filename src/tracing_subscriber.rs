@@ -16,6 +16,7 @@ pub fn register() {
     let dispatch = Dispatch::new(subscriber);
     tracing::dispatcher::set_global_default(dispatch)
         .expect("global default dispatcher for tracing is already set");
+    tracing::debug!("tracing_subscriber::register initialized");
 }
 
 #[cfg(feature="log-uart")]
@@ -81,6 +82,7 @@ impl Subscriber for EmbeddedSubscriber {
 
 // - EmbeddedVisitor ----------------------------------------------------------
 
+#[cfg(feature="log-uart")]
 use core::fmt::Write;
 
 struct EmbeddedVisitor;
@@ -189,6 +191,7 @@ pub(crate) mod uart {
 
 // - tracing_println ----------------------------------------------------------
 
+#[cfg(feature="log-uart")]
 use crate::tracing_subscriber::uart::BufferWriter;
 
 #[macro_export]
@@ -211,7 +214,7 @@ macro_rules! tracing_println {
         #[cfg(feature="log-itm")]
         {
             // give the itm buffer time to empty
-            cortex_m::asm::delay(96_000_000 / 32);
+            cortex_m::asm::delay(350_000);
             // print output using itm peripheral
             let itm = unsafe { &mut *cortex_m::peripheral::ITM::ptr() };
             cortex_m::iprintln!(&mut itm.stim[0], $($arg)*);

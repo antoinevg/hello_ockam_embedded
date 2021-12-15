@@ -39,10 +39,6 @@ use nucleo_h7xx::hal as hal;
 #[cfg(feature = "bsp_nucleo_h7xx")]
 use nucleo_h7xx::hal::hal as embedded_hal;
 
-// logging macros
-#[cfg_attr(not(feature = "std"), macro_use)]
-extern crate ockam_executor;
-
 // hal version mismatch
 #[cfg(not(feature = "atsame54"))]
 use hal::time::MilliSeconds;
@@ -57,6 +53,7 @@ use ockam::println;
 
 use hello_ockam::allocator;
 use hello_ockam::tracing_subscriber;
+
 
 // - modules ------------------------------------------------------------------
 
@@ -77,12 +74,17 @@ fn entry() -> ! {
 }
 
 
-fn main() -> core::result::Result<(), u32> {
+fn main() -> ockam::Result<()> {
 
     // - initialize allocator -------------------------------------------------
 
     allocator::init();
     allocator::stats(0);
+
+    // - register tracing subscriber ------------------------------------------
+
+    #[cfg(feature="log-semihosting")]
+    tracing_subscriber::register();
 
     // - ockam::node ----------------------------------------------------------
 
@@ -101,27 +103,57 @@ fn main() -> core::result::Result<(), u32> {
             use hal::prelude::*;
             use hal::timer::TimerCounter;
 
-            let mut peripherals = pac::Peripherals::take().unwrap();
+            let mut dp = pac::Peripherals::take().unwrap();
 
             let mut clocks = GenericClockController::with_internal_32kosc(
-                peripherals.GCLK,
-                &mut peripherals.MCLK,
-                &mut peripherals.OSC32KCTRL,
-                &mut peripherals.OSCCTRL,
-                &mut peripherals.NVMCTRL,
+                dp.GCLK,
+                &mut dp.MCLK,
+                &mut dp.OSC32KCTRL,
+                &mut dp.OSCCTRL,
+                &mut dp.NVMCTRL,
             );
 
             let gclk0 = clocks.gclk0();
             let tc45 = clocks.tc4_tc5(&gclk0).unwrap();
-            let timer = TimerCounter::tc4_(&tc45, peripherals.TC4, &mut peripherals.MCLK);
+            let timer = TimerCounter::tc4_(&tc45, dp.TC4, &mut dp.MCLK);
 
-            let mut pins = hal::Pins::new(peripherals.PORT);
+            let mut pins = hal::Pins::new(dp.PORT);
+
+            // - configure & register uart for tracing ------------------------
+
+            #[cfg(feature="log-uart")]
+            {
+                use hal::sercom::v2::uart;
+
+                let pads = uart::Pads::default()
+                    .rx(pins.uart0_rx)   // pa05
+                    .tx(pins.uart0_tx);  // pa04
+                let gclk0 = clocks.gclk0();
+                let clock = &clocks.sercom0_core(&gclk0).unwrap();
+                let config = uart::Config::new(
+                    &dp.MCLK,
+                    dp.SERCOM0,
+                    pads,
+                    clock.freq()
+                );
+                let uart5 = config
+                    .baud(115_200.hz(), uart::BaudMode::Arithmetic(uart::Oversampling::Bits8))
+                    .char_size::<uart::EightBit>()
+                    .parity(uart::Parity::None)
+                    .stop_bits(uart::StopBits::OneBit)
+                    .enable();
+                tracing_subscriber::register_with_uart(uart5);
+            }
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
 
-            let spi6_irq = pins.pd00.into_pull_down_input(&mut pins.port);
-            let spi6_csn = pins.spi6_ss.into_push_pull_output(&mut pins.port);
-            let spi6_rst = pins.pb01.into_push_pull_output(&mut pins.port);
+            let (spi6_irq, spi6_csn, spi6_rst) = {
+                // looks like we're stuck on spi v1 until bluenrg upgrades
+                #[allow(deprecated)]
+                (pins.pd00.into_pull_down_input(&mut pins.port),
+                 pins.spi6_ss.into_push_pull_output(&mut pins.port),
+                 pins.pb01.into_push_pull_output(&mut pins.port))
+            };
 
             let spi6 = hal::pins::SPI {
                 sck: pins.sck,
@@ -130,8 +162,8 @@ fn main() -> core::result::Result<(), u32> {
             }.init(
                 &mut clocks,
                 1.mhz(),
-                peripherals.SERCOM6,
-                &mut peripherals.MCLK,
+                dp.SERCOM6,
+                &mut dp.MCLK,
                 &mut pins.port,
             );
 
@@ -160,6 +192,9 @@ fn main() -> core::result::Result<(), u32> {
                         .freeze(pwrcfg, syscfg)
                 }
             );
+
+            #[cfg(feature="log-itm")]
+            tracing_subscriber::register();
 
             let pins = board.split_gpios(dp.GPIOA.split(ccdr.peripheral.GPIOA),
                                          dp.GPIOB.split(ccdr.peripheral.GPIOB),

@@ -80,6 +80,11 @@ fn main() -> ockam::Result<()> {
     allocator::init();
     allocator::stats(0);
 
+    // - register tracing subscriber ------------------------------------------
+
+    #[cfg(feature="log-semihosting")]
+    tracing_subscriber::register();
+
     // - ockam::node ----------------------------------------------------------
 
     use echoer::Echoer;
@@ -114,8 +119,6 @@ fn main() -> ockam::Result<()> {
             let mut pins = hal::Pins::new(dp.PORT);
 
             // - configure & register uart for tracing ------------------------
-            #[cfg(feature="log-semihosting")]
-            tracing_subscriber::register();
 
             #[cfg(feature="log-uart")]
             {
@@ -142,6 +145,8 @@ fn main() -> ockam::Result<()> {
             }
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
+
+            // TODO investigate: https://github.com/atsamd-rs/atsamd/blob/25463f34063d12ef19b1de8d62e6d84cbbb7504f/boards/itsybitsy_m4/src/lib.rs -> spi_master()
 
             let (spi6_irq, spi6_csn, spi6_rst) = {
                 // looks like we're stuck on spi v1 until bluenrg upgrades
@@ -188,6 +193,9 @@ fn main() -> ockam::Result<()> {
                         .freeze(pwrcfg, syscfg)
                 }
             );
+
+            #[cfg(feature="log-itm")]
+            tracing_subscriber::register();
 
             let pins = board.split_gpios(dp.GPIOA.split(ccdr.peripheral.GPIOA),
                                          dp.GPIOB.split(ccdr.peripheral.GPIOB),

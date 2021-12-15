@@ -19,7 +19,7 @@ qemu:
 nucleo-h7xx:
 	cp memory-nucleo-h7xx.x	memory.x
 	cargo +nightly -Z unstable-options \
-		--config "target.cfg.runner = 'arm-none-eabi-gdb -q -x openocd-itm.gdb'" \
+		--config "target.'cfg(target_arch=\"arm\")'.runner = 'arm-none-eabi-gdb -q -x openocd-itm.gdb'" \
 		run --example $(example) \
 			--release \
 			--target thumbv7em-none-eabihf \
@@ -30,12 +30,15 @@ nucleo-h7xx:
 atsame54:
 	cp memory-atsame54.x memory.x
 	cargo +nightly -Z unstable-options \
-		--config "target.cfg.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
+		--config "target.'cfg(target_arch=\"arm\")'.runner = 'arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
 		run --example $(example) \
 			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
 			--features="atsame54,no_main"
+
+# --config "target.'cfg(target_arch=\"arm\")'.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-itm.gdb'"
+
 
 stm32f4:
 	cargo +nightly run --example $(example) --release --target thumbv7em-none-eabihf --no-default-features --features="stm32f4"
