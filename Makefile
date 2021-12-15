@@ -32,6 +32,7 @@ atsame54:
 	cargo +nightly -Z unstable-options \
 		--config "target.cfg.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
 		run --example $(example) \
+			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
 			--features="atsame54,no_main"

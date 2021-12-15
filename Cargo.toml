@@ -79,6 +79,7 @@ atsame54 = [
     "panic-semihosting",
     "cortex-m-semihosting",
     "log-uart",
+    #"log-semihosting",
     "atsame54_xpro",
     "embedded-hal", # TODO atsame54_xpro declares hal::hal as private
     "ockam_transport_ble/atsame54",
@@ -131,6 +132,7 @@ ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", defa
 ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, optional = true }
 ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 tracing = { version = "0.1", default-features = false }
+nb = { version = "1.0.0" }
 
 # cortex-m
 alloc-cortex-m = { version = "0.4.1", optional = true } # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
@@ -169,6 +171,6 @@ opt-level = "s"
 [profile.release]
 debug = true
 incremental = false
-lto = true
+#lto = true         # breaks atsame54
 opt-level = "z"
-codegen-units = 1
+#codegen-units = 1  # breaks atsame54
