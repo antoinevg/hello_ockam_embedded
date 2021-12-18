@@ -6,7 +6,6 @@
     rustup target add thumbv7em-none-eabihf --toolchain nightly
     brew install qemu
 
-
 ## Running examples
 
 ### 01-node
@@ -19,6 +18,16 @@
     make example=01-node daisy
     make example=01-node nucleo-h7xx
 
+
+## Monitoring debug output
+
+For itm:
+
+    itmdump -F -f /tmp/itm.fifo
+
+For uart:
+
+    picocom -b 115200 --imap lfcrlf /dev/tty.usbserial-AR0K4XGV
 
 ## BLE Transport
 
