@@ -6,7 +6,7 @@
 // - bare metal entrypoint ----------------------------------------------------
 
 #[cfg(all(feature = "alloc", feature = "cortexm"))]
-mod allocator;
+use hello_ockam::allocator;
 
 #[cfg(feature = "cortexm")]
 use panic_semihosting as _;

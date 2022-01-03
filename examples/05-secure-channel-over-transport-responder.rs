@@ -92,8 +92,8 @@ fn main() -> ockam::Result<()> {
     use ockam::{Context, Result, Routed, Entity, TrustEveryonePolicy, Vault, Worker};
     use ockam_transport_ble::BleTransport;
 
-    #[ockam::node]
-    async fn async_main(ctx: Context) -> Result<()> {
+    #[ockam::node(no_main)]
+    async fn main(ctx: Context) -> Result<()> {
 
         // - configure board --------------------------------------------------
 

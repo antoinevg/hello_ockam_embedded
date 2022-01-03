@@ -24,7 +24,7 @@ nucleo-h7xx:
 			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
-			--features="stm32h7,bsp_nucleo_h7xx,no_main"
+			--features="stm32h7,bsp_nucleo_h7xx"
 
 # 1024 kB Flash, 256 kB RAM
 atsame54:
@@ -35,7 +35,7 @@ atsame54:
 			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
-			--features="atsame54,no_main"
+			--features="atsame54"
 
 # --config "target.'cfg(target_arch=\"arm\")'.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-itm.gdb'"
 

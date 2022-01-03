@@ -9,14 +9,12 @@ version = "0.1.0"
 # - features ------------------------------------------------------------------
 
 [features]
-#default = ["atsame54"]
-default = ["atsame54", "no_main"]
+default = ["atsame54"]
 #default = ["stm32h7", "bsp_nucleo_h7xx"]
-#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main"]
-#default = ["stm32h7", "bsp_nucleo_h7xx", "no_main", "debug_alloc"]
+#default = ["stm32h7", "bsp_nucleo_h7xx"]
+#default = ["stm32h7", "bsp_nucleo_h7xx", "debug_alloc"]
 #default = ["stm32h7", "bsp_daisy"]
 #default = ["stm32h7", "bsp_daisy", "debug_alloc"]
-#default = ["stm32h7", "bsp_daisy", "no_main"]
 #default = ["stm32f4"]
 
 # Feature (enabled by default): "std" enables functionality expected to
@@ -45,13 +43,6 @@ alloc = [
     "ockam_core/alloc",
     "ockam_executor/alloc",
     "ockam_transport_ble/alloc",
-]
-
-# Feature: "no_main" allows you to define an ockam node inside your
-# own program entry-point rather than having ockam define the main()
-# function. This is particularly useful on baremetal platforms.
-no_main = [
-    "ockam/no_main",
 ]
 
 # Feature: "debug_alloc" enables a debug version of the heap allocator
