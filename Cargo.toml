@@ -160,7 +160,7 @@ debug = true
 opt-level = "s"
 
 [profile.release]
-debug = true
+debug = false
 incremental = false
 #lto = true         # breaks atsame54
 opt-level = "z"
