@@ -64,7 +64,7 @@ mod echoer;
 
 #[cortex_m_rt::entry]
 fn entry() -> ! {
-    match main() {
+    match sync_main() {
         Ok(_) => (),
         Err(e) => {
             println!("main error: {:?}", e);
@@ -74,7 +74,7 @@ fn entry() -> ! {
 }
 
 
-fn main() -> ockam::Result<()> {
+fn sync_main() -> ockam::Result<()> {
 
     // - initialize allocator -------------------------------------------------
 
@@ -257,8 +257,7 @@ fn main() -> ockam::Result<()> {
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
-
-        // - example code -----------------------------------------------------
+        // - echoer -----------------------------------------------------------
 
         // Define an Echoer worker that prints any message it receives and
         // echoes it back on its return route.
@@ -279,6 +278,8 @@ fn main() -> ockam::Result<()> {
             }
         }
         struct Echoer;
+
+        // - example code -----------------------------------------------------
 
         // Create an echoer worker
         println!("[main] Create an echoer worker");

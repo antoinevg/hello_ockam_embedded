@@ -3,6 +3,7 @@
 
 // - features -----------------------------------------------------------------
 
+#![cfg_attr(feature = "alloc", feature(alloc_error_handler))]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), no_main)]
 
@@ -63,7 +64,7 @@ mod echoer;
 
 #[cortex_m_rt::entry]
 fn entry() -> ! {
-    match main() {
+    match sync_main() {
         Ok(_) => (),
         Err(e) => {
             println!("main error: {:?}", e);
@@ -73,7 +74,7 @@ fn entry() -> ! {
 }
 
 
-fn main() -> ockam::Result<()> {
+fn sync_main() -> ockam::Result<()> {
 
     // - initialize allocator -------------------------------------------------
 
@@ -87,8 +88,8 @@ fn main() -> ockam::Result<()> {
 
     // - ockam::node ----------------------------------------------------------
 
-    use echoer::Echoer;
-    use ockam::{Context, Result};
+    use ockam::compat::{boxed::Box, string::String};
+    use ockam::{Context, Result, Routed, Worker};
     use ockam_transport_ble::BleTransport;
 
     #[ockam::node(no_main)]
@@ -258,19 +259,41 @@ fn main() -> ockam::Result<()> {
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
-        // - the example code -------------------------------------------------
+        // - echoer -----------------------------------------------------------
+
+        // Define an Echoer worker that prints any message it receives and
+        // echoes it back on its return route.
+        #[ockam::worker]
+        impl Worker for Echoer {
+            type Context = Context;
+            type Message = String;
+
+            async fn handle_message(&mut self, ctx: &mut Context, msg: Routed<String>) -> Result<()> {
+                println!("\n[echoer] [✓] Address: {}, Received: {}", ctx.address(), msg);
+
+                // Echo the message body back on its return_route.
+                println!("[echoer] [✓] Echoing message '{}' back on its return_route: {}",
+                         &msg,
+                         msg.return_route());
+
+                ctx.send(msg.return_route(), msg.body()).await
+            }
+        }
+        struct Echoer;
+
+        // - example code -----------------------------------------------------
+
+        // Create an echoer worker
+        println!("[main] Create an echoer worker");
+        ctx.start_worker("echoer", Echoer).await?;
 
         // Initialize the BLE Transport.
         println!("[main] Initialize the BLE Transport.");
         let ble = BleTransport::create(&ctx).await?;
 
         // Create a BLE listener and wait for incoming connections.
-        println!("[main] Create a BLE listener and wait for incoming connections.");
+        println!("[main] Create a BLE listener that will wait for incoming connections.");
         ble.listen(ble_server, "ockam_ble_1").await?;
-
-        // Create an echoer worker
-        println!("[main] Create an echoer worker");
-        ctx.start_worker("echoer", Echoer).await?;
 
         // Don't call ctx.stop() here so this node runs forever.
         println!("[main] run forever");

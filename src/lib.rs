@@ -5,5 +5,4 @@
 extern crate tracing;
 
 pub mod allocator;
-pub mod targets;
 pub mod tracing_subscriber;
