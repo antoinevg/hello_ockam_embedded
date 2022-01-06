@@ -135,13 +135,18 @@ pub(crate) mod uart {
     macro_rules! uart_println {
         ($($arg:tt)*) => {{
             if let Some(uart) = unsafe { uart::UART.as_mut() } {
-                let mut buffer = [0u8; 256];
+                let mut buffer = [0u8; 512];
                 let mut buffer = BufferWriter::new(&mut buffer[..]);
                 writeln!(&mut buffer,  $($arg)*).unwrap();
                 for byte in buffer.as_bytes() {
                     // NOTE `block!` blocks until `uart.write()` completes and returns
                     // `Result<(), Error>`
-                    ::nb::block!(uart.write(*byte)).unwrap();
+                    match ::nb::block!(uart.write(*byte)) {
+                        Ok(()) => (),
+                        Err(_) => {
+                            cortex_m::asm::delay(10_000);
+                        },
+                    }
                 }
             }
         }};
@@ -229,6 +234,7 @@ macro_rules! tracing_println {
         {
             use atsame54_xpro as hal;
             use hal::prelude::_embedded_hal_serial_Write;
+            cortex_m::asm::delay(500_000);
             crate::uart_println!($($arg)*);
         }
     }};

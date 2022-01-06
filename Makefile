@@ -1,3 +1,6 @@
+clean:
+	cargo clean
+
 itm:
 	rm -f /tmp/itm.fifo
 	touch /tmp/itm.fifo
@@ -30,7 +33,7 @@ nucleo-h7xx:
 atsame54:
 	cp memory-atsame54.x memory.x
 	cargo +nightly -Z unstable-options \
-		--config "target.'cfg(target_arch=\"arm\")'.runner = 'arm-none-eabi-gdb -q -x openocd-semihosting.gdb'" \
+		--config "target.'cfg(target_arch=\"arm\")'.runner = 'arm-none-eabi-gdb -q -x openocd-uart.gdb'" \
 		run --example $(example) \
 			--release \
 			--target thumbv7em-none-eabihf \

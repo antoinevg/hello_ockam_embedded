@@ -18,6 +18,10 @@
     make example=01-node daisy
     make example=01-node nucleo-h7xx
 
+### 04-routing-over-transport-responder
+
+    make example=04-routing-over-transport-responder atsame54
+
 
 ## Monitoring debug output
 

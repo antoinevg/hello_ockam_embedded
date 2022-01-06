@@ -67,10 +67,8 @@ atsame54 = [
     "no_std",
     "alloc",
     "cortexm",
-    "panic-semihosting",
-    "cortex-m-semihosting",
+    "panic-halt",
     "log-uart",
-    #"log-semihosting",
     "atsame54_xpro",
     "embedded-hal", # TODO atsame54_xpro declares hal::hal as private
     "ockam_transport_ble/atsame54",
@@ -130,8 +128,10 @@ alloc-cortex-m = { version = "0.4.1", optional = true } # TODO https://docs.rs/a
 cortex-m = { version = "0.7.3", optional = true }
 cortex-m-rt = { version = "0.6.14", optional = true }
 cortex-m-semihosting = { version = "0.3.7", optional = true }
-panic-semihosting = { version = "0.5.6", optional = true }
+panic-abort = { version = "0.3.2", optional = true }
+panic-halt = { version = "0.2.0", optional = true }
 panic-itm = { version = "0.4.2", optional = true }
+panic-semihosting = { version = "0.5.6", optional = true }
 
 # atsame
 atsame54_xpro = { version = "0.3.0", optional = true }
@@ -160,7 +160,7 @@ debug = true
 opt-level = "s"
 
 [profile.release]
-debug = false
+debug = true
 incremental = false
 #lto = true         # breaks atsame54
 opt-level = "z"

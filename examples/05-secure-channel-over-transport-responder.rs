@@ -11,7 +11,7 @@
 #[cfg(any(feature = "stm32f4", feature = "stm32h7"))]
 use panic_itm as _;
 #[cfg(feature = "atsame54")]
-use panic_semihosting as _;
+use panic_abort as _;
 
 // atsame54
 #[cfg(feature = "atsame54")]
