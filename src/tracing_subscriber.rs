@@ -152,7 +152,7 @@ pub(crate) mod uart {
         }};
     }
 
-    // - BufferWriter -------------------------------------------------------------
+    // - BufferWriter ---------------------------------------------------------
 
     pub struct BufferWriter<'a> {
         buffer: &'a mut [u8],

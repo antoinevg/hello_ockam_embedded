@@ -119,7 +119,7 @@ log-uart = []
 ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["software_vault"], optional = true }
 ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", default_features = false, optional = true }
 ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, optional = true }
-ockam_transport_ble = { path = "../ockam_transport_ble.git", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
+ockam_transport_ble = { path = "../ockam.git/implementations/rust/ockam/ockam_transport_ble", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 tracing = { version = "0.1", default-features = false }
 nb = { version = "1.0.0" }
 
