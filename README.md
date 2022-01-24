@@ -20,7 +20,9 @@
 
 ### 04-routing-over-transport-responder
 
-    make example=04-routing-over-transport-responder atsame54
+    openocd -f openocd-atsame54.cfg
+
+    make example=04-routing-over-ble-transport-responder atsame54
 
 
 ## Monitoring debug output
