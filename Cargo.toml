@@ -29,7 +29,6 @@ std = [
 # Feature: "no_std" enables functionality required for platforms
 # without the standard library.
 no_std = [
-    "core2", # needed for hello_transport example # TODO delete
     "ockam/no_std",
     "ockam_core/no_std",
     "ockam_executor/no_std",
@@ -70,7 +69,7 @@ atsame54 = [
     "panic-halt",
     "log-uart",
     "atsame54_xpro",
-    "embedded-hal", # TODO atsame54_xpro declares hal::hal as private
+    "embedded-hal", # atsame54_xpro declares hal::hal as private
     "ockam_transport_ble/atsame54",
     "bluenrg",
 ]
@@ -124,7 +123,7 @@ tracing = { version = "0.1", default-features = false }
 nb = { version = "1.0.0" }
 
 # cortex-m
-alloc-cortex-m = { version = "0.4.1", optional = true } # TODO https://docs.rs/alloc-compose/0.5.0/alloc_compose/
+alloc-cortex-m = { version = "0.4.1", optional = true }
 cortex-m = { version = "0.7.3", optional = true }
 cortex-m-rt = { version = "0.6.14", optional = true }
 cortex-m-semihosting = { version = "0.3.7", optional = true }
@@ -142,9 +141,7 @@ stm32f4xx-hal = { version = "0.9.0", features = ["rt", "stm32f407"], optional = 
 daisy_bsp = { version = "0.4.2", features = ["seed", "log-itm"], optional = true }
 nucleo-h7xx = { version = "0.1.2", default-features = false, features = ["log-itm"], optional = true }
 
-#bluenrg = { version = "0.1.0", default-features = false, features = ["ms"], optional = true }
-#bluenrg = { path = "../../Ockam.forks/bluenrg.git", features = ["ms"], optional = true }
-bluenrg = { git = "https://github.com/antoinevg/bluenrg.git", rev = "c7117b9", features = ["ms"], optional = true }
+bluenrg = { version = "0.1.0", default-features = false, features = ["ms"], optional = true }
 bluetooth-hci = { version = "0.1.0", default-features = false, features = ["version-4-2"] }
 
 # other
