@@ -23,6 +23,7 @@ std = [
     "ockam/default",
     "ockam_core/default",
     "ockam_executor/default",
+    #"ockam_getrandom_software/default",
     "ockam_transport_ble/default",
 ]
 
@@ -32,6 +33,7 @@ no_std = [
     "ockam/no_std",
     "ockam_core/no_std",
     "ockam_executor/no_std",
+    #"ockam_getrandom_software/no_std",
     "ockam_transport_ble/no_std",
 ]
 
@@ -41,6 +43,7 @@ alloc = [
     "ockam/alloc",
     "ockam_core/alloc",
     "ockam_executor/alloc",
+    #"ockam_getrandom_software/alloc",
     "ockam_transport_ble/alloc",
 ]
 
@@ -61,6 +64,8 @@ qemu = [
      "cortexm",
      "panic-itm",
      "log-itm",
+     #"panic-semihosting",
+     #"cortex-m-semihosting",
 ]
 atsame54 = [
     "no_std",
@@ -113,11 +118,12 @@ log-uart = []
 [dependencies]
 
 # ockam
-#ockam = { version = "0.36", default_features = false, features = ["software_vault"] }
+#ockam = { version = "0.49", default_features = false, features = ["software_vault"] }
 #ockam = { git = "https://github.com/ockam-network/ockam.git", branch = "develop",
 ockam = { path = "../ockam.git/implementations/rust/ockam/ockam", default_features = false, features = ["software_vault"], optional = true }
 ockam_core = { path = "../ockam.git/implementations/rust/ockam/ockam_core", default_features = false, optional = true }
 ockam_executor = { path = "../ockam.git/implementations/rust/ockam/ockam_executor", default_features = false, optional = true }
+#ockam_getrandom_software = { path = "../ockam.git/implementations/rust/ockam/ockam_getrandom_software", default_features = false, optional = true }
 ockam_transport_ble = { path = "../ockam.git/implementations/rust/ockam/ockam_transport_ble", default_features = false, features = ["no_std", "alloc", "use_bluetooth_hci", ], optional = true }
 tracing = { version = "0.1", default-features = false }
 nb = { version = "1.0.0" }
@@ -148,6 +154,9 @@ bluetooth-hci = { version = "0.1.0", default-features = false, features = ["vers
 core2 = { version = "0.3", default-features = false, optional = true }
 [target.'cfg(all(target_arch="wasm32",target_os="unknown"))'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
+#[target.'cfg(target_arch="arm")'.dependencies]
+#getrandom = { version = "0.2", features = ["custom"] }
+#ockam_getrandom_failure = { path = "./ockam_getrandom_failure" }
 
 
 # - profiles ------------------------------------------------------------------
