@@ -7,7 +7,7 @@ itm:
 	itmdump -F -f /tmp/itm.fifo
 
 std:
-	cargo build --example $(example)
+	cargo build --example $(example) --no-default-features --features="std"
 	leaks --atExit -- target/debug/examples/$(example)
 
 no_std:
@@ -27,18 +27,18 @@ nucleo-h7xx:
 			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
-			--features="stm32h7,bsp_nucleo_h7xx"
+			--features="stm32h7,bsp_nucleo_h7xx,use_bluetooth_hci"
 
 # 1024 kB Flash, 256 kB RAM
 atsame54:
 	cp memory-atsame54.x memory.x
 	cargo +nightly -Z unstable-options \
 		--config "target.'cfg(target_arch=\"arm\")'.runner = 'arm-none-eabi-gdb -q -x openocd-uart.gdb'" \
-		run --example $(example) \
+		build --example $(example) \
 			--release \
 			--target thumbv7em-none-eabihf \
 			--no-default-features \
-			--features="atsame54"
+			--features="atsame54,use_bluetooth_hci"
 
 # --config "target.'cfg(target_arch=\"arm\")'.runner = './xpacks/.bin/arm-none-eabi-gdb -q -x openocd-itm.gdb'"
 

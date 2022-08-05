@@ -11,7 +11,7 @@
 #[cfg(any(feature = "stm32f4", feature = "stm32h7"))]
 use panic_itm as _;
 #[cfg(feature = "atsame54")]
-use panic_abort as _;
+use panic_halt as _;
 
 // atsame54
 #[cfg(feature = "atsame54")]
@@ -39,25 +39,23 @@ use nucleo_h7xx::hal as hal;
 #[cfg(feature = "bsp_nucleo_h7xx")]
 use nucleo_h7xx::hal::hal as embedded_hal;
 
-// hal version mismatch
-#[cfg(not(feature = "atsame54"))]
+// hal mismatches
+#[cfg(any(feature = "stm32h7", feature = "pic32"))]
 use hal::time::MilliSeconds;
+#[cfg(feature = "stm32f4")]
+use stm32f4xx_hal_fugit::MillisDurationU32 as MilliSeconds;
 #[cfg(feature = "atsame54")]
-use hal::time::Milliseconds as MilliSeconds;
+use atsame54_xpro::time::Milliseconds as MilliSeconds;
 
 
 // - dependencies -------------------------------------------------------------
 
-use hal::pac;
-use ockam::println;
-
 use hello_ockam::allocator;
 use hello_ockam::tracing_subscriber;
 
+use ockam_core::println;
 
-// - modules ------------------------------------------------------------------
-
-mod echoer;
+use hal::pac;
 
 
 // - entry --------------------------------------------------------------------
@@ -89,7 +87,11 @@ fn sync_main() -> ockam::Result<()> {
     // - ockam::node ----------------------------------------------------------
 
     use ockam::compat::{boxed::Box, string::String};
-    use ockam::{Context, Result, Routed, Entity, TrustEveryonePolicy, Vault, Worker};
+
+    use ockam::authenticated_storage::InMemoryStorage;
+    use ockam::identity::{Identity, TrustEveryonePolicy};
+    use ockam::{vault::Vault, Context, Result, Routed, Worker};
+
     use ockam_transport_ble::BleTransport;
 
     #[ockam::node(no_main)]
@@ -137,7 +139,7 @@ fn sync_main() -> ockam::Result<()> {
                     clock.freq()
                 );
                 let uart5 = config
-                    .baud(115_200.hz(), uart::BaudMode::Arithmetic(uart::Oversampling::Bits8))
+                    .baud(115_200.mhz(), uart::BaudMode::Arithmetic(uart::Oversampling::Bits8))
                     .char_size::<uart::EightBit>()
                     .parity(uart::Parity::None)
                     .stop_bits(uart::StopBits::OneBit)
@@ -183,12 +185,12 @@ fn sync_main() -> ockam::Result<()> {
                 dp.RCC.constrain(),
                 &dp.SYSCFG,
                 |pwrcfg, rcc, syscfg| {
-                    rcc.sys_ck(96.mhz())                // system clock @ 96 MHz
+                    rcc.sys_ck(96.MHz())                // system clock @ 96 MHz
                         // pll1 drives system clock
                         .pll1_strategy(hal::rcc::PllConfigStrategy::Iterative)
-                        .pll1_r_ck(96.mhz())             // TRACECLK
-                        .pll1_q_ck(48.mhz())             // spi clock
-                        .pll3_p_ck((48_000 * 256).hz())  // sai clock @ 12.288 MHz
+                        .pll1_r_ck(96.MHz())             // TRACECLK
+                        .pll1_q_ck(48.MHz())             // spi clock
+                        .pll3_p_ck((48_000 * 256).Hz())  // sai clock @ 12.288 MHz
                         .freeze(pwrcfg, syscfg)
                 }
             );
@@ -206,16 +208,16 @@ fn sync_main() -> ockam::Result<()> {
 
             // - configure spi interface for STEVAL-IDB005V1D -----------------
 
-            let timer = dp.TIM7.timer(1.hz(), ccdr.peripheral.TIM7, &ccdr.clocks);
+            let timer = dp.TIM7.timer(1.Hz(), ccdr.peripheral.TIM7, &ccdr.clocks);
 
             let spi3_irq  = pins.d43.into_pull_down_input();
             let spi3_rst  = pins.d44.into_push_pull_output();
-            let spi3_sck  = pins.d45.into_alternate_af6().set_speed(hal::gpio::Speed::VeryHigh);
-            let spi3_miso = pins.d46.into_alternate_af6().set_speed(hal::gpio::Speed::VeryHigh);
-            let spi3_mosi = pins.d47.into_alternate_af6().set_speed(hal::gpio::Speed::VeryHigh);
+            let spi3_sck  = pins.d45.into_alternate().speed(hal::gpio::Speed::VeryHigh);
+            let spi3_miso = pins.d46.into_alternate().speed(hal::gpio::Speed::VeryHigh);
+            let spi3_mosi = pins.d47.into_alternate().speed(hal::gpio::Speed::VeryHigh);
 
             let mut spi3_nss  = pins.d20.into_push_pull_output();
-            spi3_nss.set_high().ok();
+            spi3_nss.set_high();
 
             let config = hal::spi::Config::new(
                 spi::Mode {
@@ -227,7 +229,7 @@ fn sync_main() -> ockam::Result<()> {
             let spi3 = dp.SPI3.spi(
                 (spi3_sck, spi3_miso, spi3_mosi),
                 config,
-                3.mhz(),
+                3.MHz(),
                 ccdr.peripheral.SPI3,
                 &ccdr.clocks,
             );
@@ -253,7 +255,10 @@ fn sync_main() -> ockam::Result<()> {
         use ockam_transport_ble::driver::BleServer;
 
         let mut ble_adapter = BleAdapter::with_interface(spi, bluenrg);
+        #[cfg(not(feature="stm32h7"))]
         ble_adapter.reset(&mut timer, MilliSeconds(50).into())?;
+        // TODO !!!!!!!!! #[cfg(feature="stm32h7")]
+        //ble_adapter.reset(&mut timer, MilliSeconds::from_ticks(50).into())?;
 
         let ble_server = BleServer::with_adapter(ble_adapter);
 
@@ -291,11 +296,14 @@ fn sync_main() -> ockam::Result<()> {
 
         // Create a Vault to safely store secret keys for Bob.
         println!("[main] Create a Vault to safely store secret keys for Bob.");
-        let vault = Vault::create(&ctx).await?;
+        let vault = Vault::create();
 
-        // Create an Entity to represent Bob.
-        println!("[main] Create an Entity to represent Bob.");
-        let mut bob = Entity::create(&ctx, &vault).await?;
+        // Create an Identity to represent Bob.
+        println!("[main] Create an Identity to represent Bob.");
+        let bob = Identity::create(&ctx, &vault).await?;
+
+        // Create an AuthenticatedStorage to store info about Bob's known Identities.
+        let storage = InMemoryStorage::new();
 
         // Create a BLE listener and wait for incoming connections.
         println!("[main] Create a BLE listener that will wait for incoming connections.");
@@ -304,7 +312,7 @@ fn sync_main() -> ockam::Result<()> {
         // Create a secure channel listener for Bob that will wait for requests to
         // initiate an Authenticated Key Exchange.
         println!("[main] Create a secure channel listener for Bob.");
-        bob.create_secure_channel_listener("bob_listener", TrustEveryonePolicy)
+        bob.create_secure_channel_listener("bob_listener", TrustEveryonePolicy, &storage)
             .await?;
 
         // Don't call ctx.stop() here so this node runs forever.

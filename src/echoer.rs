@@ -1,10 +1,11 @@
 #[cfg(all(not(feature = "std"), feature = "cortexm"))]
+use ockam_core::println;
+#[cfg(all(not(feature = "std"), feature = "cortexm"))]
 use ockam::{
     compat::{
         boxed::Box,
         string::String
-    },
-    println
+    }
 };
 use ockam::{Context, Result, Routed, Worker};
 

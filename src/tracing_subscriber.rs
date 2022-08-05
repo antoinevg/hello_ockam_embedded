@@ -221,20 +221,20 @@ macro_rules! tracing_println {
             // give the itm buffer time to empty
             cortex_m::asm::delay(350_000);
             // print output using itm peripheral
-            let itm = unsafe { &mut *cortex_m::peripheral::ITM::ptr() };
+            let itm = unsafe { &mut *cortex_m::peripheral::ITM::PTR };
             cortex_m::iprintln!(&mut itm.stim[0], $($arg)*);
         }
 
         // semihosting logger
         #[cfg(feature="log-semihosting")]
-        cortex_m_semihosting::hprintln!($($arg)*).unwrap();
+        cortex_m_semihosting::hprintln!($($arg)*);
 
         // uart logger
         #[cfg(all(feature="log-uart", feature="atsame54"))]
         {
             use atsame54_xpro as hal;
             use hal::prelude::_embedded_hal_serial_Write;
-            cortex_m::asm::delay(500_000);
+            cortex_m::asm::delay(250_000);
             crate::uart_println!($($arg)*);
         }
     }};

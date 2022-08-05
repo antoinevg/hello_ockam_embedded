@@ -1,8 +1,8 @@
 #[cfg(all(not(feature = "std"), feature = "cortexm"))]
-use ockam::{
-    compat::boxed::Box,
-    println
-};
+use ockam_core::println;
+#[cfg(all(not(feature = "std"), feature = "cortexm"))]
+use ockam::compat::boxed::Box;
+
 use ockam::{Any, Context, Result, Routed, Worker};
 
 pub struct Hop;

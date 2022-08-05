@@ -1,17 +1,12 @@
-#![cfg_attr(feature = "alloc", feature(alloc_error_handler))]
-#![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(not(feature = "std"), no_main)]
+#![cfg_attr(all(feature = "alloc", feature = "cortexm"), feature(alloc_error_handler))]
+#![cfg_attr(all(not(feature = "std"), feature = "cortexm"), no_std)]
+#![cfg_attr(all(not(feature = "std"), feature = "cortexm"), no_main)]
 
 // - bare metal dependencies --------------------------------------------------
 
-#[cfg(not(feature = "std"))]
 use ockam::{
     compat::string::{String, ToString},
-    println
 };
-
-#[cfg(feature = "alloc")]
-mod allocator;
 
 #[cfg(feature = "cortexm")]
 use panic_itm as _;
@@ -91,6 +86,9 @@ fn entry() -> ! {
 }
 
 // - ockam::node entrypoint ---------------------------------------------------
+
+mod echoer;
+mod hop;
 
 use hello_ockam::{Echoer, Hop};
 use ockam::{route, Context, Result};

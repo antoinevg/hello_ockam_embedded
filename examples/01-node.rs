@@ -15,7 +15,7 @@ use panic_semihosting as _;
 use cortex_m_semihosting::debug;
 
 #[cfg(feature = "cortexm")]
-use ockam::println;
+use ockam_core::println;
 
 #[cfg(feature = "atsame54")]
 use atsame54_xpro as _;
